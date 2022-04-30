@@ -58,6 +58,9 @@ class Alphabet extends FlxSpriteGroup {
 				addText();
 			}
 		}
+
+		width = 1;
+		height = 1;
 	}
 
 	public function setText(s:String) {
@@ -335,6 +338,7 @@ class AlphaCharacter extends FlxSprite {
 		frames = sparrow;
 
 		setGraphicSize(Std.int(width * size));
+		updateHitbox();
 		this.size = size;
 
 		antialiasing = true;
@@ -352,7 +356,7 @@ class AlphaCharacter extends FlxSprite {
 		if (letter == " ") {
 			width = 40 * size;
 		}
-		y += row * 60;
+		y += (row * 60) * size;
 		visible = false;
 	}
 
@@ -365,69 +369,66 @@ class AlphaCharacter extends FlxSprite {
 		animation.addByPrefix(letter, letter + " " + letterCase, 24);
 		animation.play(letter);
 		updateHitbox();
-		y = (110 - height);
-		y += row * 60;
 
-		FlxG.log.add('the row' + row);
+		y = (60 * size) - height;
+
+		//line break
+		y += (row * 60) * size;
 	}
 
 	public function createNumber(letter:String):Void {
 		animation.addByPrefix(letter, letter, 24);
-		
+		animation.play(letter);
+		updateHitbox();
+
 		if (size == 0.7) {
 			y += 100 * size;
 		}
 		else {
 			y += 60 * size;
 		}
-
-		animation.play(letter);
-		updateHitbox();
 	}
 
 	public function createSymbol(letter:String) {
 		switch (letter) {
 			case '.':
 				animation.addByPrefix(letter, 'period', 24);
-
-				//the text will go a bit off, needs to be rewritten
-				y += Math.pow(100, size) / size / size;
 			case "'":
 				animation.addByPrefix(letter, 'apostraphie', 24);
-
-				y += 20 * size;
 			case "?":
 				animation.addByPrefix(letter, 'question mark', 24);
-
-				y += 30 * size;
 			case "!":
 				animation.addByPrefix(letter, 'exclamation point', 24);
-				
-				y += 20 * size;
 			case ",":
 				animation.addByPrefix(letter, 'comma', 24);
-
-				y += 70 * size;
-			case ":":
-				animation.addByPrefix(letter, letter, 24);
-
-				y += 70 * size;
-			case "-":
-				animation.addByPrefix(letter, letter, 24);
-
-				y += 20 * size;
-				x -= 40 * size;
-			case "(", ")":
-				animation.addByPrefix(letter, letter, 24);
-
-				y += 60 * size;
 			default:
 				animation.addByPrefix(letter, letter, 24);
-
-				y += 20 * size;
 		}
 		animation.play(letter);
 		updateHitbox();
+
+		switch (letter) {
+			case '.':
+				// the text will go a bit off, needs to be rewritten
+				y += Math.pow(100, size) / size / size;
+			case "'":
+				y += 20 * size;
+			case "?":
+				y += 30 * size;
+			case "!":
+				y += 20 * size;
+			case ",":
+				y += 70 * size;
+			case ":":
+				y += 70 * size;
+			case "-":
+				y += 20 * size;
+				x -= 40 * size;
+			case "(", ")":
+				y += 60 * size;
+			default:
+				y += 20 * size;
+		}
 	}
 
 	public var lastSprite:AlphaCharacter;
