@@ -387,5 +387,10 @@ class Note extends FlxSprite {
 		}
 	}
 
+	//function for lua note shit
+	public function toArray():Array<Dynamic> {
+		return [strumTime, noteData, sustainLength, action, actionValue];
+	}
+
 	public var notePrefix:String = "blue";
 }
