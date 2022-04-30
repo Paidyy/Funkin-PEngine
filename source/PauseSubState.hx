@@ -17,7 +17,7 @@ using StringTools;
 class PauseSubState extends MusicBeatSubstate {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Options', 'Exit to menu'];
+	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Achievements', 'Options', 'Exit to menu'];
 	var curSelected:Int = 0;
 
 	var pauseMusic:FlxSound;
@@ -114,6 +114,9 @@ class PauseSubState extends MusicBeatSubstate {
 					close();
 				case "Restart Song":
 					FlxG.resetState();
+				case "Achievements":
+					PlayState.openAchievements = true;
+					close();
 				case "Options":
 					PlayState.openSettings = true;
 					close();
