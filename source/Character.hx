@@ -375,9 +375,6 @@ class Character extends AnimatedSprite {
 				colorTransform.blueOffset = -50;
 				missColorTransform = true;
 			}
-			#if debug
-			//trace("animation " + AnimName + " doesn't exist");
-			#end
 		}
 	}
 
