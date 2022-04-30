@@ -28,13 +28,25 @@ class OptionsSubState extends FlxSubState {
 	var curSelected:Int = 0;
 	var inGame:Bool;
 
+	public static var optionsCamera:FlxCamera;
+
 	public function new(?inGame = false) {
 		super();
 
+		if (inGame)
+			optionsCamera = PlayState.camOptions;
+		else
+			optionsCamera = FlxG.camera;
+
 		this.inGame = inGame;
 
-		if (inGame)
-			FlxG.cameras.list[FlxG.cameras.list.length - 1].zoom = 0.7;
+		optionsCamera.follow(null);
+
+		optionsCamera.scroll.x = 0;
+		optionsCamera.scroll.y = 0;
+
+		//if (inGame)
+			//optionsCamera.zoom = 0.7;
 
 		var bg = new Background(FlxColor.ORANGE);
 		add(bg);
@@ -56,9 +68,8 @@ class OptionsSubState extends FlxSubState {
 			item.y -= curY / 2;
 		}
 		add(optionsItems);
-
-		if (inGame)
-			cameras = [PlayState.camStatic];
+		
+		cameras = [optionsCamera];
 	}
 
 	override function update(elapsed:Float) {
@@ -104,7 +115,6 @@ class OptionsSubState extends FlxSubState {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			MainMenuState.selectedSomethin = false;
 			PlayState.openSettings = false;
-			FlxG.cameras.list[FlxG.cameras.list.length - 1].zoom = 1;
 			if (inGame) {
 				close();
 				PlayState.currentPlaystate.pauseGame(true);
@@ -123,6 +133,7 @@ class OptionsPrefencesSubState extends OptionSubState {
 			new OptionItem('Discord Rich Presence', true, Options.discordRPC, value -> Options.discordRPC = value),
 			new OptionItem('Disable Crash Handler', true, Options.disableCrashHandler, value -> Options.disableCrashHandler = value),
 			new OptionItem('Update Checker', true, Options.updateChecker, value -> Options.updateChecker = value),
+			new OptionItem('Freeplay Listen to Vocals', true, Options.freeplayListenVocals, value -> Options.freeplayListenVocals = value),
 			new OptionItem('BF Skin'),
 			new OptionItem('GF Skin'),
 			new OptionItem('Dad Skin')
@@ -221,6 +232,8 @@ class OptionSubState extends FlxSubState {
 		this.itemList = itemList;
 
 		var bg = new Background(FlxColor.MAGENTA);
+		bg.setGraphicSize(Std.int(bg.width * (1 + (itemList.length * 0.01))), Std.int(bg.height * (1 + (itemList.length * 0.01))));
+		bg.updateHitbox();
 		add(bg);
 
 		var curY = 0.0;
@@ -230,20 +243,27 @@ class OptionSubState extends FlxSubState {
 			option.ID = curIndex;
 			option.y += curY;
 			curY += option.height + 25;
+			option.scrollFactor.set(1, 1);
 			items.add(option);
 
 			if (option.hasCheckBox) {
 				option.checkbox.x = option.x + option.width + 10;
 				option.checkbox.y = option.y;
 				option.checkbox.ID = curIndex;
+				option.checkbox.scrollFactor.set(option.scrollFactor.x, option.scrollFactor.y);
 				checkboxes.add(option.checkbox);
 			}
 		}
 		add(items);
 		add(checkboxes);
 
-		if (inGame)
-			cameras = [PlayState.camStatic];
+		//if (inGame)
+			//cameras = [PlayState.camStatic];
+
+		cameras = [OptionsSubState.optionsCamera];
+
+		camFollow = new FlxObject(FlxG.width / 2, 0, 0, 0);
+		OptionsSubState.optionsCamera.follow(camFollow, LOCKON, 0.04);
 	}
 
 	override function update(elapsed:Float) {
@@ -270,6 +290,7 @@ class OptionSubState extends FlxSubState {
 
 			if (alphab.ID == curSelected) {
 				alphab.alpha = 1;
+				camFollow.y = alphab.y + 100;
 			}
 		});
 
@@ -308,6 +329,8 @@ class OptionSubState extends FlxSubState {
 			}
 		}
 	}
+
+	public var camFollow:FlxObject;
 }
 
 class OptionItem extends Alphabet {
