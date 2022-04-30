@@ -1,5 +1,6 @@
 package;
 
+import openfl.display.StageQuality;
 import sys.ssl.Key;
 import flixel.input.keyboard.FlxKey;
 import Controls.KeyBind;
@@ -8,24 +9,15 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxSave;
 
 class Options {
-	//when adding new option place it here so it will load and save
-	private static var saveList = [
-		"masterVolume",
-		"ghostTapping",
-		"bgDimness",
-		"framerate",
-		"discordRPC",
-		"customGf",
-		"customGfPath",
-		"customBf",
-		"customBfPath",
-		"customDad",
-		"customDadPath",
-		"disableCrashHandler",
-		"downscroll",
-		"updateChecker",
-		"disableSpamChecker"
-	];
+	// adding here a static variable without "_" at the beginning will make a new option
+
+	// SKINS
+	public static var customGf = false;
+	public static var customGfPath = "";
+	public static var customBf = false;
+	public static var customBfPath = "";
+	public static var customDad = false;
+	public static var customDadPath = "";
 
 	// MAIN
 	public static var masterVolume:Float = 1;
@@ -37,28 +29,21 @@ class Options {
 	public static var downscroll:Bool = false;
 	public static var updateChecker:Bool = true;
 	public static var disableSpamChecker:Bool = false;
-
-	// SKINS
-	public static var customGf = false;
-	public static var customGfPath = "";
-	public static var customBf = false;
-	public static var customBfPath = "";
-	public static var customDad = false;
-	public static var customDadPath = "";
+	public static var freeplayListenVocals:Bool = false;
 	
-	public static var optionsSave:FlxSave;
-	public static var controlsSave:FlxSave;
+	private static var _optionsSave:FlxSave;
+	private static var _controlsSave:FlxSave;
 
 	public static function startupSaveScript() {
-		controlsSave = new FlxSave();
-		controlsSave.bind("controls");
+		_controlsSave = new FlxSave();
+		_controlsSave.bind("controls");
 		saveKeyBinds();
 
-		optionsSave = new FlxSave();
-		optionsSave.bind("options");
+		_optionsSave = new FlxSave();
+		_optionsSave.bind("options");
 		saveAndLoadAll();
 		#if debug
-		trace("Options Data: " + optionsSave.data);
+		trace("Options Data: " + _optionsSave.data);
 		#end
 	}
 
@@ -70,43 +55,43 @@ class Options {
 	}
 
 	public static function saveKeyBinds() {
-		if (controlsSave.data == "{ }" || controlsSave.data == null) {
+		if (_controlsSave.data == "{ }" || _controlsSave.data == null) {
 			KeyBind.setToDefault();
 			for (keyType => keyArray in KeyBind.controlsMap) {
-				Reflect.setField(controlsSave.data, Std.string(keyType), keyArray);
+				Reflect.setField(_controlsSave.data, Std.string(keyType), keyArray);
 			}
 		}
 		else {
-			for (field in Reflect.fields(controlsSave.data)) {
-				var val = Reflect.field(controlsSave.data, field);
+			for (field in Reflect.fields(_controlsSave.data)) {
+				var val = Reflect.field(_controlsSave.data, field);
 				KeyBind.controlsMap.set(KeyBind.typeFromString(field), val);
 			}
 		}
 	}
 
 	public static function get(variable):Dynamic {
-		return Reflect.field(optionsSave.data, variable);
+		return Reflect.field(_optionsSave.data, variable);
 	}
 
 	public static function set(variable, value) {
-		Reflect.setField(optionsSave.data, variable, value);
+		Reflect.setField(_optionsSave.data, variable, value);
 	}
 
 	public static function setAndSave(variable, value) {
-		Reflect.setField(optionsSave.data, variable, value);
+		Reflect.setField(_optionsSave.data, variable, value);
 		saveFile();
 	}
 
 	/** Saves options and controls save file */
 	public static function saveFile() {
-		optionsSave.flush();
-		controlsSave.flush();
+		_optionsSave.flush();
+		_controlsSave.flush();
 	}
 
 	public static function saveAndLoadAll() {
-		for (i in 0...saveList.length) {
-			if (!exists(saveList[i])) {
-				set(saveList[i], Reflect.field(Options, saveList[i]));
+		for (i in getClassOptions()) {
+			if (!exists(i)) {
+				set(i, Reflect.field(Options, i));
 			}
 		}
 		saveFile();
@@ -115,16 +100,16 @@ class Options {
 
 	/** Saves settings and saves them to the save file */
 	public static function saveAll() {
-		for (i in 0...saveList.length) {
-			set(saveList[i], Reflect.field(Options, saveList[i]));
+		for (i in getClassOptions()) {
+			set(i, Reflect.field(Options, i));
 		}
 		saveFile();
 	}
 
 	/** Loads settings from save file */
 	public static function loadAll() {
-		for (i in 0...saveList.length) {
-			Reflect.setField(Options, saveList[i], get(saveList[i]));
+		for (i in getClassOptions()) {
+			Reflect.setField(Options, i, get(i));
 		}
 	}
 
@@ -133,5 +118,17 @@ class Options {
 		FlxG.updateFramerate = framerate;
 		FlxG.drawFramerate = framerate;
 		// PlayerSettings.player1.controls.bindFromSettings(true);
+	}
+
+	static function getClassOptions():Array<String> {
+		var arr:Array<String> = [];
+		for (i in Type.getClassFields(Options)) {
+			if (Reflect.field(Options, i) != i) {
+				if (!i.startsWith("_")) {
+					arr.push(i);
+				}
+			}
+		}
+		return arr;
 	}
 }
