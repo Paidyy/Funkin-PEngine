@@ -1,5 +1,7 @@
 package;
 
+import flixel.system.FlxAssets.FlxSoundAsset;
+import flixel.system.FlxSound;
 import sys.io.File;
 import sys.FileSystem;
 import flixel.math.FlxRandom;
@@ -194,14 +196,15 @@ class FreeplayState extends MusicBeatState {
 		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
 		diffText.font = scoreText.font;
 
-		var downBarBG:FlxSprite = new FlxSprite(0, FlxG.height - 30).makeGraphic(FlxG.width, 30, 0xFF000000);
-		downBarBG.alpha = 0.6;
-
-		var downBarText:FlxText = new FlxText(0, downBarBG.y, 0, "", Std.int(downBarBG.height) - 5);
+		var downBarText:FlxText = new FlxText(0, 0, 0, "", 18);
 		downBarText.setFormat(Paths.font("vcr.ttf"), downBarText.size, FlxColor.WHITE);
 		downBarText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
 		downBarText.text = "SPACE to listen to the current song     R to select random song";
 		downBarText.screenCenter(X);
+
+		var downBarBG:FlxSprite = new FlxSprite(0, FlxG.height - downBarText.height - 5).makeGraphic(FlxG.width, Std.int(downBarText.height) + 6, 0xFF000000);
+		downBarBG.alpha = 0.6;
+		downBarText.y = downBarBG.y;
 
 		add(downBarBG);
 		add(downBarText);
@@ -223,6 +226,10 @@ class FreeplayState extends MusicBeatState {
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
 
 		// JUST DOIN THIS SHIT FOR TESTING!!!
+		/*
+		 what the fuck i literally came back from toilet and i was accidently on this line when testing the vocals
+		 thanks ninjamuffin for this, will use this for update state lmfao
+		*/
 		/* 
 			var md:String = Markdown.markdownToHtml(Assets.getText('CHANGELOG.md'));
 
@@ -238,6 +245,8 @@ class FreeplayState extends MusicBeatState {
 
 			trace(md);
 		 */
+
+		vocals = new FlxSound();
 
 		super.create();
 	}
@@ -260,10 +269,10 @@ class FreeplayState extends MusicBeatState {
 	}
 
 	override function update(elapsed:Float) {
-		super.update(elapsed);
-
 		if (FlxG.sound.music != null)
 			Conductor.songPosition = FlxG.sound.music.time;
+
+		super.update(elapsed);
 
 		if (FlxG.sound.music.volume < 0.7) {
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -300,6 +309,7 @@ class FreeplayState extends MusicBeatState {
 			changeDiff(1);
 
 		if (Controls.check(BACK, JUST_PRESSED)) {
+			vocals.stop();
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			FlxG.switchState(new MainMenuState());
 		}
@@ -308,11 +318,37 @@ class FreeplayState extends MusicBeatState {
 			if (doubleSpace == 1) {
 				goToSong();
 			} else {
+				FlxG.sound.music.stop();
+				vocals.stop();
+				
+				var preloadInst:FlxSound = new FlxSound();
+				var preloadVoices:FlxSound = new FlxSound();
+
 				if (FileSystem.exists(Paths.instNoLib(songs[curSelected].songName))) {
-					FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0.6);
+					preloadInst = new FlxSound().loadEmbedded(Paths.inst(songs[curSelected].songName));
 				} else {
-					FlxG.sound.playMusic(Sound.fromFile(Paths.PEinst(songs[curSelected].songName)));
+					preloadInst = FlxG.sound.load(Sound.fromFile(Paths.PEinst(songs[curSelected].songName)));
 				}
+
+				if (Options.freeplayListenVocals) {
+					if (FileSystem.exists(Paths.voicesNoLib(songs[curSelected].songName))) {
+						preloadVoices = new FlxSound().loadEmbedded(Paths.voices(songs[curSelected].songName));
+					}
+					else if (FileSystem.exists(Paths.PEvoices(songs[curSelected].songName))) {
+						preloadVoices = FlxG.sound.load(Sound.fromFile(Paths.PEvoices(songs[curSelected].songName)));
+					}
+				}
+
+				vocals = preloadVoices;
+				vocals.looped = true;
+				vocals.persist = false;
+				vocals.play();
+
+				FlxG.sound.music = preloadInst;
+				FlxG.sound.music.looped = true;
+				FlxG.sound.music.persist = true;
+				FlxG.sound.music.group = FlxG.sound.defaultMusicGroup;
+				FlxG.sound.music.play();
 
 				var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 				var json:SwagSong;
@@ -347,10 +383,17 @@ class FreeplayState extends MusicBeatState {
 		
 	}
 
-	function goToSong() {
-		var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
+	override function stepHit() {
+		super.stepHit();
 
-		trace(poop);
+		if (vocals.time > Conductor.songPosition + 20 || vocals.time < Conductor.songPosition - 20) {
+			vocals.time = Conductor.songPosition;
+		}
+	}
+
+	function goToSong() {
+		vocals.stop();
+		var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 
 		var customSong = false;
 		
@@ -474,6 +517,8 @@ class FreeplayState extends MusicBeatState {
 	var camBG:FlxCamera;
 
 	var camMain:FlxCamera;
+
+	var vocals:FlxSound;
 }
 
 class SongMetadata {
