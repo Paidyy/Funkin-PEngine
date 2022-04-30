@@ -1,5 +1,7 @@
 package;
 
+import flixel.text.FlxText.FlxTextBorderStyle;
+import flixel.util.FlxColor;
 import haxe.xml.Access;
 import flixel.graphics.frames.FlxAtlasFrames;
 import sys.io.File;
@@ -71,6 +73,16 @@ class Stage extends FlxTypedGroup<Dynamic> {
 
     public function applyStageShitToPlayState() {
         PlayState.camZoom = camZoom;
+		if (PlayState.currentPlaystate.scoreTxt != null) {
+			if (name.startsWith('school')) {
+				PlayState.currentPlaystate.scoreTxt.setFormat(Paths.font("pixel.otf"), PlayState.currentPlaystate.scoreTxt.size - 6, FlxColor.WHITE);
+				PlayState.currentPlaystate.scoreTxt.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.fromString("#404047"), 3);
+			}
+			else {
+				PlayState.currentPlaystate.scoreTxt.setFormat(Paths.font("vcr.ttf"), PlayState.currentPlaystate.scoreTxt.size, FlxColor.WHITE);
+				PlayState.currentPlaystate.scoreTxt.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
+			}
+        }
     }
 
 	public function new(stage:String = "stage") {
@@ -531,38 +543,46 @@ class Stage extends FlxTypedGroup<Dynamic> {
                 if (config.get("gfScrollFactorY") != null) gfScrollFactorY = Std.parseFloat(Std.string(config.get("gfScrollFactorY")));
 
                 var map:AnyObjectMap = config.get('images');
+                
+				if (map != null) {
+					for (image in map.keys()) {
+						var keys:AnyObjectMap = config.get('images').get(image);
+						var stageSprite = new StageAsset(0, 0, image);
+						if (FileSystem.exists('${prefixPath}images/$image.xml')) {
+							stageSprite.frames = FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes('${prefixPath}images/$image.png')),
+								File.getContent('${prefixPath}images/$image.xml'));
+							var document = new Access(Xml.parse(File.getContent('${prefixPath}images/$image.xml')));
+							for (ele in document.node.TextureAtlas.elements) {
+								if (ele.has.name) {
+									var name = ele.att.name.substring(0, ele.att.name.length - 4);
 
-                for (image in map.keys()) {
-                    var keys:AnyObjectMap = config.get('images').get(image);
-                    var stageSprite = new StageAsset(0, 0, image);
-                    if (FileSystem.exists('${prefixPath}images/$image.xml')) {
-                        stageSprite.frames = FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes('${prefixPath}images/$image.png')), File.getContent('${prefixPath}images/$image.xml'));
-                        var document = new Access(Xml.parse(File.getContent('${prefixPath}images/$image.xml')));
-                        for (ele in document.node.TextureAtlas.elements) {
-                            if (ele.has.name) {
-                                var name = ele.att.name.substring(0, ele.att.name.length - 4);
-
-                                if (name == "beatBop") stageSprite.animation.addByPrefix("bop", "beatBop", 24, false);
-                                if (name == "idleLoop") {
-                                    stageSprite.animation.addByPrefix("idleLoop", "idleLoop", 24, true);
-                                    stageSprite.animation.play("idleLoop");
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        stageSprite.loadGraphic(BitmapData.fromBytes(File.getBytes('${prefixPath}images/$image.png')));
-                    }
-                    if (keys != null) {
-                        if (keys.get("x") != null) stageSprite.x = keys.get("x");
-                        if (keys.get("y") != null) stageSprite.y = keys.get("y");
-                        if (keys.get("size") != null) {
-                            stageSprite.setAssetSize(keys.get("size"));
-                        }
-                        if (keys.get("scrollFactorX") != null) stageSprite.scrollFactor.x = keys.get("scrollFactorX");
-                        if (keys.get("scrollFactorY") != null) stageSprite.scrollFactor.y = keys.get("scrollFactorY");
-                    }
-                    add(stageSprite);
+									if (name == "beatBop")
+										stageSprite.animation.addByPrefix("bop", "beatBop", 24, false);
+									if (name == "idleLoop") {
+										stageSprite.animation.addByPrefix("idleLoop", "idleLoop", 24, true);
+										stageSprite.animation.play("idleLoop");
+									}
+								}
+							}
+						}
+						else {
+							stageSprite.loadGraphic(BitmapData.fromBytes(File.getBytes('${prefixPath}images/$image.png')));
+						}
+						if (keys != null) {
+							if (keys.get("x") != null)
+								stageSprite.x = keys.get("x");
+							if (keys.get("y") != null)
+								stageSprite.y = keys.get("y");
+							if (keys.get("size") != null) {
+								stageSprite.setAssetSize(keys.get("size"));
+							}
+							if (keys.get("scrollFactorX") != null)
+								stageSprite.scrollFactor.x = keys.get("scrollFactorX");
+							if (keys.get("scrollFactorY") != null)
+								stageSprite.scrollFactor.y = keys.get("scrollFactorY");
+						}
+						add(stageSprite);
+					}
                 }
             }
         }
