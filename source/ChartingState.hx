@@ -56,6 +56,7 @@ class ChartingState extends MusicBeatState {
         "Damage",
         "Picos",
 		"Change Character",
+		"Change Stage",
 		"Change Scroll Speed",
 		"Add Camera Zoom",
 		"Hey",
@@ -86,6 +87,8 @@ class ChartingState extends MusicBeatState {
 		Using custom characters is recommended here\n
 		Value Syntax: <gf, bf, dad>, <character>\n
 		Example Value: dad, pico",
+
+		"Changes current stage to <value>",
 
 		"Just like in the name",
 
@@ -174,7 +177,8 @@ class ChartingState extends MusicBeatState {
 				playAs: "bf",
 				needsVoices: true,
 				validScore: false,
-				notes: [],
+				swapBfGui: false,
+				notes: []
 			};
 			if (daSongName != null) {
 				_song.song = daSongName;
@@ -367,6 +371,12 @@ class ChartingState extends MusicBeatState {
 
 		var playAsText = new FlxText(playAsDropDown.x - 5, playAsDropDown.y - 15, 0, "Play As:");
 
+		var check_swapgui = new FlxUICheckBox(whichKMenu.x, playAsDropDown.y + playAsDropDown.height + 5, null, null, "Swap Bf Gui with Dad", 100);
+		check_swapgui.checked = _song.swapBfGui;
+		check_swapgui.callback = function() {
+			_song.swapBfGui = check_swapgui.checked;
+		};
+
 		var tab_group_song = new FlxUI(null, UI_box);
 		tab_group_song.name = "Song";
 
@@ -386,6 +396,8 @@ class ChartingState extends MusicBeatState {
 		tab_group_song.add(loadAutosaveBtn);
 		tab_group_song.add(stepperBPM);
 		tab_group_song.add(stepperSpeed);
+		tab_group_song.add(check_swapgui);
+
 		tab_group_song.add(playAsDropDown);
 		tab_group_song.add(player1DropDown);
 		tab_group_song.add(player2DropDown);
