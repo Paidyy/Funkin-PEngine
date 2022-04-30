@@ -82,14 +82,22 @@ class StageDebug extends MusicBeatState {
 		var daLoop:Int = 0;
 
         for (char in characters) {
-            var text:FlxText = new FlxText(dumbTextsWidthWX + 30, 42 + (23 * daLoop), 0, char.curCharacter + " : " + "[ " + char.x + ", " + char.y + "]", 15);
+            var charName = null;
+            if (char == midget)
+				charName = "bf";
+            if (char == gf)
+				charName = "gf";
+			if (char == dad)
+				charName = "dad";
+			textChar.x = dumbTextsWidthWX;
+			var text:FlxText = new FlxText(dumbTextsWidthWX + 30, 42 + (23 * daLoop), 0, charName + " : " + "[ " + char.x + ", " + char.y + "]", 15);
             text.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
             text.scrollFactor.set();
             text.color = FlxColor.GRAY;
             dumbTexts2.add(text);
 
             if (pushList)
-                characterList.push(char.curCharacter);
+				characterList.push(charName);
 
             daLoop++;
         }
@@ -161,7 +169,9 @@ class StageDebug extends MusicBeatState {
         "WS - Change the Sprite\n" +
         "AD - Change the tab (Images / Characters)\n" +
 		"IJKL - Move the camera (Shift to 2x faster)\n" +
-        "CTRL + S - Save the Config\n"
+        "CTRL + S - Save the Config\n" +
+        "H - Change to current playstate assets\n" +
+		"QE - Zoom Out/In\n"
 		;
 		info.scrollFactor.set();
 		info.y = (FlxG.height - info.height) + (info.size * 2);
@@ -180,7 +190,6 @@ class StageDebug extends MusicBeatState {
         
         //copying from animation debug because yes
         camFollow = new FlxObject(0, 0, 1, 1);
-		camFollow.screenCenter();
 		add(camFollow);
 
         FlxG.camera.follow(camFollow);
@@ -197,6 +206,35 @@ class StageDebug extends MusicBeatState {
     override function update(elapsed) {
         Conductor.songPosition = FlxG.sound.music.time;
         FlxG.mouse.visible = true;
+
+        if (FlxG.keys.justPressed.H) {
+			midget.kill();
+			dad.kill();
+			gf.kill();
+			characters.remove(midget);
+			characters.remove(dad);
+			characters.remove(gf);
+			midget = new Boyfriend(midget.x, midget.y, PlayState.SONG.player1);
+			dad = new Character(dad.x, dad.y, PlayState.SONG.player2);
+			gf = new Character(gf.x, gf.y, PlayState.gfVersion);
+			characters.add(gf);
+			characters.add(dad);
+			characters.add(midget);
+			if (FileSystem.exists(Paths.instNoLib(PlayState.SONG.song))) {
+				FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 1, false);
+			}
+			else {
+				FlxG.sound.playMusic(Sound.fromFile(Paths.PEinst(PlayState.SONG.song)), 1, false);
+			}
+        }
+
+        if (FlxG.keys.justPressed.Q) {
+            camera.zoom -= 0.05;
+        }
+
+		if (FlxG.keys.justPressed.E) {
+			camera.zoom += 0.05;
+		}
 
         if (FlxG.keys.justPressed.A) {
             curTab = 0;
@@ -290,9 +328,9 @@ class StageDebug extends MusicBeatState {
                     }
                 if (curTab == 1)
                     for (char in characters) {
-                        if (char.curCharacter == characterList[currentCharacter]) {
-                            char.x = char.x + (FlxG.mouse.x - oldMousePos[0]);
-                            char.y = char.y + (FlxG.mouse.y - oldMousePos[1]);
+						if (char == getCurrentChar()) {
+							char.x = char.x + (FlxG.mouse.x - oldMousePos[0]);
+							char.y = char.y + (FlxG.mouse.y - oldMousePos[1]);
                         }
                     }
             }
@@ -348,6 +386,32 @@ class StageDebug extends MusicBeatState {
         dad.playAnim("idle");
     }
 
+    function getCurrentChar() {
+		if (characterList[currentCharacter] == "bf") {
+            return midget;
+        }
+		if (characterList[currentCharacter] == "dad") {
+            return dad;
+        }
+		if (characterList[currentCharacter] == "gf") {
+            return gf;
+        }
+        return null;
+    }
+
+    function charToCharName(char) {
+		if (char == midget) {
+			return "bf";
+		}
+		if (char == dad) {
+			return "dad";
+		}
+		if (char == gf) {
+			return "gf";
+		}
+		return null;
+    }
+
     function saveConfig() {
 		if (stage.config != null) {
 			if (stage.config.get('images') == null) {
@@ -356,8 +420,8 @@ class StageDebug extends MusicBeatState {
             stage.config.set('zoom', stage.camZoom);
 
             for (char in characters) {
-                stage.config.set('${char.curCharacter}X', char.x);
-                stage.config.set('${char.curCharacter}Y', char.y);
+				stage.config.set('${charToCharName(char)}X', char.x);
+				stage.config.set('${charToCharName(char)}Y', char.y);
             }
 
             var images = stage.config.get('images');
