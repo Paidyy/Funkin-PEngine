@@ -19,8 +19,9 @@ typedef SwagSong =
 	var validScore:Bool;
 	var whichK:Int;
 	var stage:String;
-	var notes:Array<SwagSection>;
 	var playAs:String;
+	var swapBfGui:Bool;
+	var notes:Array<SwagSection>;
 }
 
 class Song
@@ -33,17 +34,19 @@ class Song
 	public var player2:String = 'dad';
 	public var whichK:Int = 4;
 	public var stage:String;
-	public var notes:Array<SwagSection>;
 	public var playAs:String = "bf";
+	public var swapBfGui:Bool = false;
+	public var notes:Array<SwagSection>;
 
-	public function new(song, notes, bpm, stage, ?whichK, ?playAs)
+	public function new(song, notes, bpm, stage, ?whichK, ?playAs, ?swapBfGui)
 	{
 		this.song = song;
 		this.bpm = bpm;
 		this.stage = stage;
 		this.whichK = whichK;
-		this.notes = notes;
 		this.playAs = playAs;
+		this.swapBfGui = swapBfGui;
+		this.notes = notes;
 	}
 
 	public static function loadFromJson(jsonInput:String, ?folder:String):SwagSong
