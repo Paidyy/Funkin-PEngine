@@ -1,5 +1,6 @@
 package;
 
+import Main.Notification;
 import flixel.addons.transition.TransitionData;
 import flixel.FlxSubState;
 import multiplayer.Lobby.LobbySelectorState;
@@ -47,6 +48,9 @@ class MainMenuState extends MusicBeatState {
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
+
+		if (TitleState.isFridayNight)
+			Achievement.unlock("fridayNight");
 
 		if (!skipTrans) {
 			transIn = FlxTransitionableState.defaultTransIn;

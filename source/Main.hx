@@ -1,5 +1,14 @@
 package;
 
+import Achievement.AchievementObject;
+import openfl.display.Bitmap;
+import openfl.display.Shape;
+import lime.graphics.Image;
+import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
+import openfl.text.Font;
+import flixel.system.FlxAssets;
+import flixel.tweens.misc.NumTween;
 import openfl.events.TimerEvent;
 import openfl.events.EventType;
 import openfl.utils.Timer;
@@ -45,6 +54,8 @@ class Main extends Sprite {
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
+	public static var notifTweenManager:NotificationTweenManager;
+
 	public static function main():Void {
 		Lib.current.addChild(new Main());
 	}
@@ -74,6 +85,7 @@ class Main extends Sprite {
 		var stageHeight:Int = Lib.current.stage.stageHeight;
 
 		Options.startupSaveScript();
+		Achievement.init();
 
 		if (zoom == -1) {
 			var ratioX:Float = stageWidth / gameWidth;
@@ -113,6 +125,8 @@ class Main extends Sprite {
 		#if !mobile
 		addChild(new EFPS());
 		#end
+
+		FlxG.plugins.add(Main.notifTweenManager = new NotificationTweenManager());
 	}
 
 	public static var gitJson:Dynamic = null;
@@ -135,6 +149,11 @@ class Game extends FlxGame {
 		}
 	}
 }
+
+/**
+ * made this class because FlxG.plugins.add() is fucked shit and can't accept plugins with the same class names
+ */
+class NotificationTweenManager extends FlxTweenManager { }
 
 class CrashHandler extends FlxState {
 	// inspired from ddlc mod and old minecraft crash handler
@@ -223,14 +242,92 @@ class CrashHandler extends FlxState {
 	}
 }
 
+class AchievementNotification {
+	public var achieObject:AchievementObject;
+
+	public function new(achieId:String) {
+		achieObject = AchievementObject.fromID(achieId);
+
+		var icon = new Bitmap(BitmapData.fromFile(achieObject.iconPath));
+		icon.width = icon.width * 0.5;
+		icon.height = icon.height * 0.5;
+		icon.x = 40;
+		icon.y = 40;
+
+		var text = new TextField();
+		text.selectable = false;
+		text.defaultTextFormat = new TextFormat(Font.fromFile("assets/fonts/vcr.ttf").fontName, 20, FlxColor.WHITE);
+		text.text = achieObject.displayName;
+		text.width = text.textWidth;
+		text.y = icon.y;
+		text.x = icon.x + icon.width + 10;
+
+		var textDesc = new TextField();
+		textDesc.selectable = false;
+		textDesc.defaultTextFormat = new TextFormat(Font.fromFile("assets/fonts/vcr.ttf").fontName, 16, FlxColor.WHITE);
+		textDesc.text = achieObject.description;
+		textDesc.width = textDesc.textWidth;
+		textDesc.y = text.y + text.textHeight + 10;
+		textDesc.x = text.x;
+
+		var bgWidth:Float = textDesc.textWidth;
+		if (text.textWidth > bgWidth) {
+			bgWidth = text.textWidth;
+		}
+		bgWidth += icon.width + 10;
+		bgWidth += 40;
+
+
+		var bgHeight:Float = icon.height;
+		if (text.textHeight > bgHeight) {
+			bgHeight = text.textHeight;
+		}
+		if (textDesc.textHeight > bgHeight) {
+			bgHeight = textDesc.textHeight;
+		}
+
+		bgHeight += 40;
+
+		var bg = new Bitmap(new BitmapData(Std.int(bgWidth), Std.int(bgHeight), true, FlxColor.BLACK));
+		bg.alpha = 0.6;
+		bg.x = 20;
+		bg.y = 20;
+
+		Main.instance.addChild(bg);
+		Main.instance.addChild(icon);
+		Main.instance.addChild(text);
+		Main.instance.addChild(textDesc);
+
+		var timer = new Timer(1000 * 3, 1);
+		timer.addEventListener(TimerEvent.TIMER_COMPLETE, l -> {
+			Main.notifTweenManager.num(bg.alpha, 0.0, 1, {onComplete: f -> {
+				Main.instance.removeChild(bg);
+				Main.instance.removeChild(icon);
+				Main.instance.removeChild(text);
+				Main.instance.removeChild(textDesc);
+			}},
+			value -> {
+				bg.alpha = value;
+				icon.alpha = value;
+				text.alpha = value;
+				textDesc.alpha = value;
+			}).start();
+		});
+		timer.start();
+	}
+}
+
 class Notification extends TextField {
 	public static var notifs:Array<Notification> = [];
-	var arrIndex = 0;
+	public static var curNotif:Notification;
+	public var timer:Timer;
+	public var tween:NumTween;
+
 	public function new(text:String, ?color:Int = FlxColor.RED) {
 		super();
 
 		selectable = false;
-		defaultTextFormat = new TextFormat("_sans", 32, color);
+		defaultTextFormat = new TextFormat(Font.fromFile("assets/fonts/vcr.ttf").fontName, 32, color);
 		this.text = text;
 
 		width = textWidth;
@@ -239,25 +336,38 @@ class Notification extends TextField {
 		y = FlxG.height - 100;
 	}
 	public function show() {
+		if (!notifs.contains(this)) {
+			notifs.push(this);
+		}
+		
+		if (curNotif != null) {
+			return;
+		}
+
 		Main.instance.addChild(this);
+		curNotif = this;
 
-		notifs.push(this);
-		arrIndex = notifs.length - 1;
-
+		/*
 		for (notif in notifs) {
 			if (notif != this) {
 				notifs.remove(notif);
-				notif.alpha = 0;
 				Main.instance.removeChild(notif);
 			}
 		}
+		*/
 
-		var timer = new Timer(2000, 1);
+		timer = new Timer(4000, 1);
 		timer.addEventListener(TimerEvent.TIMER_COMPLETE, event -> {
-			FlxTween.num(alpha, 0.0, 1, {onComplete: f -> {
+			tween = Main.notifTweenManager.num(alpha, 0.0, 1, {onComplete: f -> {
 				notifs.remove(this);
 				Main.instance.removeChild(this);
-			}}, f -> alpha = f);
+				curNotif = null;
+				if (notifs.length > 0) {
+					notifs[notifs.length - 1].show();
+				}
+				}
+			}, f -> alpha = f);
+			tween.start();
 		});
 		timer.start();
 	}
