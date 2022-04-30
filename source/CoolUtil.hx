@@ -82,6 +82,12 @@ class CoolUtil {
 		return json;
 	}
 
+	/**
+	 * Writes to file, if the file doesnt exist it creates one
+	 * @param path the path
+	 * @param content the content, can be anything
+	 * @param binary will it be saved to binary mode, false by default
+	*/
 	public static function writeToFile(path:String, content:Dynamic, ?binary:Bool = false):Void {
         if (!FileSystem.exists(path)) {
             File.write(path, binary);
@@ -93,7 +99,6 @@ class CoolUtil {
     }
 
 	//taken from psych dont kill me
-	//also this returns value that will be the same in every framerate or some shit
 	public static function bound(value:Float, ?min:Float = 0, ?max:Float = 1):Float {
 		return Math.max(min, Math.min(max, value));
 	}
@@ -113,7 +118,7 @@ class CoolUtil {
 		return !OpenFlAssets.hasLibrary(week);
 	}
 
-	public static function getLargestKeyInMap(map:Map<String, Int>):String {
+	public static function getLargestKeyInMap(map:Map<String, Float>):String {
 		var largestKey:String = null;
 		for (key in map.keys()) {
 			if (largestKey == null || map.get(key) > map.get(largestKey)) {
@@ -125,34 +130,28 @@ class CoolUtil {
 
 	/**get dominant color so you dont have to set it manually*/
 	public static function getDominantColor(sprite:FlxSprite):FlxColor {
-		var colors = new Map<String, Int>();
+		var colors = new Map<String, Float>();
 		for (pixelWidth in 0...sprite.frameWidth) {
 			for (pixelHeight in 0...sprite.frameHeight) {
-				var pixel = sprite.pixels.getPixel(pixelWidth, pixelHeight).hex();
-				if (colors.exists(pixel))
-					colors.set(pixel, colors.get(pixel) + 1);
-				else
-					colors.set(pixel, 1);
+				var pixel32 = sprite.pixels.getPixel32(pixelWidth, pixelHeight);
+				var pixel = sprite.pixels.getPixel(pixelWidth, pixelHeight);
+				var pixelHex = "#" + pixel.hex(6);
+
+				if (pixel32 != 0) {
+					if (colors.exists(pixelHex))
+						colors.set(pixelHex, colors.get(pixelHex) + 1);
+					else
+						colors.set(pixelHex, 1);
+				}
 			}
 		}
 
-		//remove transparent colors
-		colors.remove("0");
-
-		//for example theres 6942 key it will return #6942 which is invalid so the hex value should be #006942, this is what this thing does
-		for (key in colors.keys()) {
-			if (key.length < 6) {
-				var zeros = "";
-				for (shit in 0...6 - key.length) {
-					zeros += "0";
-				}
-				var newKey = zeros + key;
-				colors.set(newKey, colors.get(key));
-				colors.remove(key);
-			}
+		//black has less score for not being used as a fill color
+		if (colors.exists("#000000")) {
+			colors.set("#000000", colors.get("#000000") / 4);
 		}
 		
-		return FlxColor.fromString("#" + getLargestKeyInMap(colors));
+		return FlxColor.fromString(getLargestKeyInMap(colors));
 	}
 
 	static inline var multiplier = 10000000;
