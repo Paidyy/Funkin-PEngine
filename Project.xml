@@ -135,10 +135,8 @@
 	<haxelib name="linc_luajit"/>
 	<haxelib name="udprotean" />
 	<haxelib name="linc_clipboard" />
-	
-	<!-- <haxelib name="hxcpp-debug-server" if="desktop"/> -->
+	<haxelib name="markdown" />
 
-	<!-- <haxelib name="markdown" /> -->
 	<!-- <haxelib name="HtmlParser" /> -->
 
 	<!--In case you want to use nape with flixel-->

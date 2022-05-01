@@ -11,6 +11,7 @@ haxelib git yaml https://github.com/Paidyy/haxe-yaml.git
 haxelib install linc_luajit
 haxelib install udprotean
 haxelib git linc_clipboard https://github.com/josuigoa/linc_clipboard.git
+haxelib install markdown
 
 echo.
 echo [37m------------------------------------
