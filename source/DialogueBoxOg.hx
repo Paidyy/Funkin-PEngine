@@ -41,22 +41,7 @@ class DialogueBoxOg extends FlxSpriteGroup {
 
 		this.hasDialog = hasDialog;
 
-		if (dialogueList != null) {
-			if (!hasDialog)
-				return;
-
-			this.dialogueList = dialogueList;
-	
-			dialogue = new Alphabet(0, 80, "", false, true);
-			// dialogue.x = 90;
-			// add(dialogue);
-	
-			// set this state camera to camStatic
-			cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
-		}
-
 		box = new FlxSprite(0, 45);
-		
 		box.frames = Paths.getSparrowAtlas('dialogue/speech_bubble_talking');
 		box.animation.addByPrefix('normalOpen', 'Speech Bubble Normal Open', 24, false);
 		box.animation.addByIndices('normal', 'speech bubble normal', [0, 5, 10, 15], "", 6);
@@ -64,6 +49,20 @@ class DialogueBoxOg extends FlxSpriteGroup {
 		box.animation.addByPrefix('loudOpen', 'speech bubble loud open', 24, false);
 		box.animation.addByPrefix('loud', 'AHH speech bubble', 24);
 		box.setGraphicSize(Std.int(box.width * 0.9));
+
+		if (dialogueList != null) {
+			if (!hasDialog)
+				return;
+
+			this.dialogueList = dialogueList;
+	
+			dialogue = new Alphabet(box.x + 40, box.y + 80, "", false, true, 0.7);
+			// dialogue.x = 90;
+			// add(dialogue);
+	
+			// set this state camera to camStatic
+			cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		}
 
 		portraitLeft = new Portrait(box.x + 140, box.y + 40, 'none');
 		add(portraitLeft);
@@ -105,15 +104,18 @@ class DialogueBoxOg extends FlxSpriteGroup {
 				box.animation.play('${style}');
 				dialogueOpened = true;
 			}
-		}
-		prevStyle = style;
 
-		if (box.animation.curAnim.name.startsWith("loud")) {
-			box.offset.set(98.608,80.62);
+			if (box.animation.curAnim.name.startsWith("loud")) {
+				box.offset.set(98.608, 80.62);
+			}
+			else {
+				box.offset.set(63.608, 16.62);
+			}
 		}
 		else {
 			box.offset.set(63.608, 16.62);
 		}
+		prevStyle = style;
 
 		if (dialogueOpened && !dialogueStarted) {
 			startDialogue();
@@ -160,7 +162,7 @@ class DialogueBoxOg extends FlxSpriteGroup {
 		if (theDialog != null)
 			remove(theDialog);
 
-		theDialog = new Alphabet(box.x + 40, 420, dialogueList[0], false, true, 0.7);
+		theDialog = new Alphabet(box.x, box.y + 80, dialogueList[0], false, true, 0.7);
 		add(theDialog);
 
 		if (!talkingRight) {
