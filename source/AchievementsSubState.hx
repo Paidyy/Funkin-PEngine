@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import OptionsSubState.Background;
@@ -19,10 +20,20 @@ class AchievementsSubState extends FlxSubState {
     override public function create() {
         super.create();
 
-		var bg = new Background(FlxColor.YELLOW);
-		add(bg);
-
 		achievements = Achievement.getAchievements();
+
+		var bg = new Background(FlxColor.fromString("#c79200"));
+		var arrBgSize = [bg.width, bg.height];
+		bg.setGraphicSize(Std.int(bg.width * (1 + (achievements.length * 0.01))), Std.int(bg.height * (1 + (achievements.length * 0.01))));
+		bg.updateHitbox();
+		bg.scrollFactor.y -= achievements.length * 0.006;
+		if (bg.scrollFactor.y < 0) {
+			bg.scrollFactor.y = 0;
+			bg.setGraphicSize(Std.int(arrBgSize[0]), Std.int(arrBgSize[1]));
+			bg.updateHitbox();
+		}
+		add(bg);
+		
         for (index in 0...achievements.length) {
 			var sprite = new AchievementSprite(achievements[index], 0.8);
             sprite.ID = index;
@@ -40,6 +51,8 @@ class AchievementsSubState extends FlxSubState {
         add(items);
 
         cameras = [PlayState.camStatic];
+		camFollow = new FlxObject(FlxG.width / 2, 0, 0, 0);
+		camera.follow(camFollow, LOCKON, 0.04);
     }
 	override public function update(elapsed) {
 		super.update(elapsed);
@@ -65,6 +78,7 @@ class AchievementsSubState extends FlxSubState {
 
 			if (alphab.ID == curSelected) {
 				alphab.alpha = 1;
+				camFollow.y = alphab.y + 100;
 			}
 		});
 
@@ -77,12 +91,16 @@ class AchievementsSubState extends FlxSubState {
 		});
 
         if (Controls.check(BACK)) {
+			camera.follow(null);
+			camera.scroll.y = 0;
             PlayState.openAchievements = false;
             close();
         }
 	}
 
 	var curSelected:Int = 0;
+
+	var camFollow:FlxObject;
 }
 
 class AchievementSprite extends Alphabet {
