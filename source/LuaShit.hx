@@ -1,5 +1,6 @@
 package;
 
+import Main.Notification;
 import flixel.graphics.frames.FlxAtlasFrames;
 import sys.io.File;
 import sys.FileSystem;
@@ -22,9 +23,6 @@ import llua.LuaL;
 import llua.State;
 
 class LuaShit {
-
-    // lua is currently not finished
-
     var lua:State;
     public function new(luaPath:String) {
         lua = LuaL.newstate();
@@ -38,6 +36,31 @@ class LuaShit {
         setVariable("swagSong", PlayState.SONG);
         setVariable("windowWidth", FlxG.width);
         setVariable("windowHeight", FlxG.height);
+
+		Lua_helper.add_callback(lua, "saveSet", function(field:String, value:String) {
+			Reflect.setField(FlxG.save.data, field, value);
+			FlxG.save.flush();
+		});
+
+		Lua_helper.add_callback(lua, "saveGet", function(field:String) {
+			return Reflect.field(FlxG.save.data, field);
+		});
+
+		Lua_helper.add_callback(lua, "close", function() {
+			close();
+		});
+
+		Lua_helper.add_callback(lua, "unlockAchievement", function(id:String) {
+			Achievement.unlock(id);
+		});
+
+		Lua_helper.add_callback(lua, "isAchievementUnlocked", function(id:String) {
+			return Achievement.isUnlocked(id);
+		});
+
+		Lua_helper.add_callback(lua, "showNotification", function(str:String) {
+			new Notification(str).show();
+		});
 
         Lua_helper.add_callback(lua, "stageSpritePlay", function(sprite:String, animation:String, ?force:Bool = true) {
             for (sprite in PlayState.currentPlaystate.stage) {
@@ -139,11 +162,13 @@ class LuaShit {
 
         Lua_helper.add_callback(lua, "addSprite", function(name:String, path:String, x:Float, y:Float) {
             var sprite:FlxSprite = new FlxSprite(x,y);
-            if (FileSystem.exists(path.substring(0, path.length - 3) + "xml")) {
-                sprite.frames = FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes("mods/" + path)), File.getContent("mods/" + path));
+			var actualPath = "mods/" + path;
+			if (FileSystem.exists(actualPath.substring(0, actualPath.length - 3) + "xml")) {
+				sprite.frames = FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes(actualPath)),
+					File.getContent(actualPath.substring(0, actualPath.length - 3) + "xml"));
             }
             else {
-                sprite.loadGraphic(BitmapData.fromFile("mods/" + path));
+				sprite.loadGraphic(BitmapData.fromFile(actualPath));
             }
             PlayState.currentPlaystate.addLuaSprite(name, sprite);
         });
@@ -153,17 +178,21 @@ class LuaShit {
             PlayState.currentPlaystate.luaSprites.remove(name);
         });
 
-        Lua_helper.add_callback(lua, "spriteAnimationAddByPrefix", function(name:String, animationName:String, xmlAnimationName:String, framerate:Int = 24, ?looped:Bool = false) {
+        Lua_helper.add_callback(lua, "spriteAnimationAddByPrefix", function(name:String, animationName:String, xmlAnimationName:String, ?framerate:Int = 24, ?looped:Bool = false) {
             PlayState.currentPlaystate.luaSprites.get(name).animation.addByPrefix(animationName, xmlAnimationName, framerate, looped);
         });
 
-        Lua_helper.add_callback(lua, "spriteAnimationAddByIndices", function(name:String, animationName:String, xmlAnimationName:String, indices:Array<Int>, framerate:Int = 24, ?looped:Bool = false) {
+        Lua_helper.add_callback(lua, "spriteAnimationAddByIndices", function(name:String, animationName:String, xmlAnimationName:String, indices:Array<Int>, ?framerate:Int = 24, ?looped:Bool = false) {
             PlayState.currentPlaystate.luaSprites.get(name).animation.addByIndices(animationName, xmlAnimationName, indices, "", framerate, looped);
         });
 
         Lua_helper.add_callback(lua, "spritePlay", function(name:String, animation:String, ?force:Bool = true) {
             PlayState.currentPlaystate.luaSprites.get(name).animation.play(animation, force);
         });
+
+		Lua_helper.add_callback(lua, "spriteSetSize", function(name:String, width:Int, height:Int) {
+			PlayState.currentPlaystate.luaSprites.get(name).setGraphicSize(width, height);
+		});
 
         Lua_helper.add_callback(lua, "tweenSpriteProperty", function(name:String, property:String, value:Float = 0, duration:Float = 1) {
             FlxTween.num(Reflect.getProperty(PlayState.currentPlaystate.luaSprites.get(name), property), value, duration, null, f -> Reflect.setProperty(PlayState.currentPlaystate.luaSprites.get(name), property, f));
@@ -302,6 +331,16 @@ class LuaShit {
             return getField(object);
         });
 
+        //alias for getVariable
+		Lua_helper.add_callback(lua, "getField", function(object:String) {
+			return getField(object);
+		});
+
+		// alias for setVariable
+		Lua_helper.add_callback(lua, "setField", function(object:String, value:Dynamic) {
+			setField(object, value);
+		});
+
         // Sets the player's health
         Lua_helper.add_callback(lua, "setHealth", function(value:Float) {
             setField("health", value);
@@ -309,7 +348,7 @@ class LuaShit {
 
         // Returns player's health
         Lua_helper.add_callback(lua, "getHealth", function() {
-            return getField("health");
+			return getField("health");
         });
 
         // Sets the camera position
@@ -414,7 +453,7 @@ class LuaShit {
     }
 
     public function getFieldType(field:String):FieldTypePlayState {
-        if (Reflect.hasField(PlayState.currentPlaystate, field)) {
+		if (Type.getInstanceFields(Type.getClass(PlayState.currentPlaystate)).contains(field)) {
             return INSTANCE;
         }
         if (Reflect.hasField(PlayState, field)) {
