@@ -1,5 +1,6 @@
 package;
 
+import Alphabet.AlphabetState;
 import Main.Notification;
 import UpdateState.OutdatedState;
 #if cpp
@@ -233,6 +234,8 @@ class TitleState extends MusicBeatState {
 		FlxG.switchState(new Splash.SplashColorState());
 		#elseif SKELETON
 		FlxG.switchState(new GitarooPause());
+		#elseif ALPHABET
+		FlxG.switchState(new AlphabetState());
 		#end
 
 		// credGroup.add(credTextShit);
