@@ -1,11 +1,13 @@
 package;
 
-import flixel.util.FlxColor;
+import OptionsSubState.Background;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.FlxState;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
+import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 
 using StringTools;
@@ -20,8 +22,6 @@ class Alphabet extends FlxSpriteGroup {
 	// for menu shit
 	public var targetY:Float = 0;
 	public var isMenuItem:Bool = false;
-
-	public var text:String = "";
 
 	var _finalText:String = "";
 	var _curText:String = "";
@@ -38,9 +38,49 @@ class Alphabet extends FlxSpriteGroup {
 
 	var splitWords:Array<String> = [];
 
-	var isBold:Bool = false;
+	public var isBold:Bool = false;
 
-	var size:Float = 1;
+	public var text(default, set):String = "";
+
+	function set_text(value:String):String {
+		//i should do this before, but i learnt about this today by accident lol 
+		text = value;
+		if (generatedText) {
+			for (alphab in this) {
+				alphab.destroy();
+			}
+			clear();
+			_finalText = value;
+
+			lastSprite = null;
+			lastWasSpace = false;
+
+			addText();
+		}
+
+		return text;
+	}
+
+	public var size(default, set):Float = 1;
+
+	function set_size(value:Float):Float {
+		size = value;
+		if (generatedText) {
+			for (alphab in this) {
+				alphab.destroy();
+			}
+			clear();
+
+			lastSprite = null;
+			lastWasSpace = false;
+
+			addText();
+		}
+
+		return size;
+	}
+
+	var generatedText:Bool = false;
 
 	public function new(x:Float, y:Float, text:String = "", ?bold:Bool = false, typed:Bool = false, ?size:Float = 1) {
 		super(x, y);
@@ -63,6 +103,7 @@ class Alphabet extends FlxSpriteGroup {
 		height = 1;
 	}
 
+	@:deprecated("use alphabet.text = 'value' instead")
 	public function setText(s:String) {
 		for (alphab in this) {
 			alphab.destroy();
@@ -77,6 +118,7 @@ class Alphabet extends FlxSpriteGroup {
 		addText();
 	}
 
+	@:deprecated("use alphabet.text = 'text' instead")
 	public function updateText(newText:String) {
 		_finalText = newText;
 		text = newText;
@@ -84,63 +126,7 @@ class Alphabet extends FlxSpriteGroup {
 	}
 
 	public function remFromText() {
-		if (lastSprite != null) {
-			text = text.substring(0, text.length - 1);
-			var lastLett = lastSprite.lastSprite;
-			remove(lastSprite);
-			lastSprite = lastLett;
-			updateText(text);
-		}
-	}
-
-	public var box:FlxSprite;
-
-	public function addToText(character:String) {
-		//it works?
-		//when adding text use this instead of setText() to prevent lag drop
-
-		updateText(text + character);
-
-		if (lastSprite == null && box != null)
-			lastSprite = new AlphaCharacter(box.x, 420, size);
-
-		#if (haxe >= "4.0.0")
-		var isNumber:Bool = AlphaCharacter.numbers.contains(character);
-		var isSymbol:Bool = AlphaCharacter.symbols.contains(character);
-		#else
-		var isNumber:Bool = AlphaCharacter.numbers.indexOf(character) != -1;
-		var isSymbol:Bool = AlphaCharacter.symbols.indexOf(character) != -1;
-		#end
-
-		var letter:AlphaCharacter = new AlphaCharacter((lastSprite.x + lastSprite.width) - x, 55 * yMulti, size);
-		if (character == "\n") {
-			letter.row = lastSprite.row + 1;
-			letter.x = 0;
-		} else {
-			letter.row = lastSprite.row;
-		}
-		letter.lastSprite = lastSprite;
-
-		if (isBold)
-			letter.createBold(character);
-		else {
-			if (isNumber) {
-				letter.createNumber(character);
-			}
-			else if (isSymbol) {
-				letter.createSymbol(character);
-			}
-			else if (character == " " || character == "\n") {
-				letter.createBlank(character);
-			}
-			else {
-				letter.createLetter(character);
-			}
-		}
-
-		add(letter);
-
-		lastSprite = letter;
+		text = text.substring(0, text.length - 1);
 	}
 
 	public function addText() {
@@ -208,6 +194,7 @@ class Alphabet extends FlxSpriteGroup {
 				lastSprite = letter;
 			}
 		}
+		generatedText = true;
 	}
 
 	function doSplitWords():Void {
@@ -303,6 +290,7 @@ class Alphabet extends FlxSpriteGroup {
 
 			tmr.time = FlxG.random.float(0.04, 0.09);
 		}, splitWords.length);
+		generatedText = true;
 	}
 
 	override function update(elapsed:Float) {
@@ -353,11 +341,12 @@ class AlphaCharacter extends FlxSprite {
 	public function createBlank(letter:String) {
 		width = 0;
 		height = 0;
-		if (letter == " ") {
-			width = 40 * size;
-		}
-		y += (row * 60) * size;
 		visible = false;
+
+		y = 60 * size;
+
+		// line break
+		y += (row * 60) * size;
 	}
 
 	public function createLetter(letter:String):Void {
@@ -381,15 +370,14 @@ class AlphaCharacter extends FlxSprite {
 		animation.play(letter);
 		updateHitbox();
 
-		if (size == 0.7) {
-			y += 100 * size;
-		}
-		else {
-			y += 60 * size;
-		}
+		y = (60 * size) - height;
+
+		// line break
+		y += (row * 60) * size;
 	}
 
 	public function createSymbol(letter:String) {
+		//pain begins
 		switch (letter) {
 			case '.':
 				animation.addByPrefix(letter, 'period', 24);
@@ -401,35 +389,70 @@ class AlphaCharacter extends FlxSprite {
 				animation.addByPrefix(letter, 'exclamation point', 24);
 			case ",":
 				animation.addByPrefix(letter, 'comma', 24);
+			case "#":
+				animation.addByPrefix(letter, 'hashtag', 24);
+			case "$":
+				animation.addByPrefix(letter, 'dollarsign', 24);
 			default:
 				animation.addByPrefix(letter, letter, 24);
 		}
 		animation.play(letter);
 		updateHitbox();
 
+		y = (60 * size) - height;
+
+		// line break
+		y += (row * 60) * size;
+
 		switch (letter) {
-			case '.':
-				// the text will go a bit off, needs to be rewritten
-				y += Math.pow(100, size) / size / size;
-			case "'":
-				y += 20 * size;
-			case "?":
-				y += 30 * size;
-			case "!":
-				y += 20 * size;
-			case ",":
-				y += 70 * size;
-			case ":":
-				y += 70 * size;
+			case "|":
+				y += 5 * size;
+			case "~":
+				y -= 35 * size;
+			case "*":
+				y -= 25 * size;
+			case "+":
+				y -= 10 * size;
 			case "-":
-				y += 20 * size;
-				x -= 40 * size;
-			case "(", ")":
-				y += 60 * size;
-			default:
-				y += 20 * size;
+				y -= 20 * size;
+			case ":":
+				y -= 5 * size;
+			case "=":
+				y -= 15 * size;
+			case "^":
+				y -= 30 * size;
+			case ",":
+				y += 10 * size;
+			case "'":
+				y -= 35 * size;
 		}
 	}
 
 	public var lastSprite:AlphaCharacter;
+}
+
+class AlphabetState extends FlxState {
+	var daAlphabet:Alphabet;
+	override public function create() {
+		super.create();
+
+		var bg = new Background(FlxColor.WHITE);
+		add(bg);
+
+		daAlphabet = new Alphabet(0, 0, "abc123" + AlphaCharacter.symbols);
+		daAlphabet.screenCenter(XY);
+		add(daAlphabet);
+	}
+
+	override public function update(elapsed) {
+		super.update(elapsed);
+
+		if (FlxG.keys.justPressed.ENTER) {
+			daAlphabet.size -= 0.1;
+		}
+
+		if (FlxG.keys.justPressed.N) {
+			daAlphabet.text += "g";
+		}
+	}
 }
