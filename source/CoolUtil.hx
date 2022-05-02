@@ -225,9 +225,9 @@ class CoolUtil {
 		Lobby.player2.clear();
 	}
 
-	public static function coolTextFile(path:String, ?modsFolder = false):Array<String> {
+	public static function coolTextFile(path:String):Array<String> {
 		var daList;
-		if (modsFolder) {
+		if (Paths.isCustomPath(path)) {
 			daList = File.getContent(path).trim().split('\n');
 		}
 		else {
@@ -321,13 +321,6 @@ class CoolUtil {
 
 	public static function isEmpty(d:Dynamic):Bool {
 		if (d == "" || d == 0 || d == null || d == "0" || d == "null" || d == "empty" || d == "none") {
-			return true;
-		}
-		return false;
-	}
-
-	public static function isCustomPath(arg0:String) {
-		if (arg0.startsWith("mods/")) {
 			return true;
 		}
 		return false;

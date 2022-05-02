@@ -34,6 +34,13 @@ class Paths {
 		currentStage = stage;
 	}
 
+	public static function isCustomPath(arg0:String) {
+		if (Assets.exists(arg0)) {
+			return false;
+		}
+		return true;
+	}
+
 	static function getPath(file:String, type:AssetType, library:Null<String>) {
 		if (library != null)
 			return getLibraryPath(file, library);

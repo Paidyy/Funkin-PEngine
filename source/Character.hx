@@ -1,5 +1,6 @@
 package;
 
+import haxe.io.Path;
 import sys.FileSystem;
 import yaml.util.ObjectMap.AnyObjectMap;
 import flixel.FlxSprite;
@@ -36,7 +37,7 @@ class Character extends AnimatedSprite {
 
 		antialiasing = true;
 
-		if (CoolUtil.isCustomPath(CoolUtil.getCharacterPath(curCharacter))) {
+		if (Paths.isCustomPath(CoolUtil.getCharacterPath(curCharacter))) {
 			var path = CoolUtil.getCharacterPath(curCharacter) + curCharacter;
 			if (path.startsWith("mods/skins/")) {
 				var spltPath = path.split("/");
