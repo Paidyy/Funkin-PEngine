@@ -25,8 +25,7 @@ class DBox extends DialogueBoxOg {
 
         var index = 0;
         for (dialogue in splittedDialogue) {
-            dialogues[index] = new Alphabet(box.x + 40, 420, Text, false, false, 0.7);
-            dialogues[index].box = box;
+            dialogues[index] = new Alphabet(box.x + 40, box.y + 80, Text, false, false, 0.7);
             add(dialogues[0]);
             index++;
         }
@@ -137,7 +136,7 @@ class DialogueBoxEditor extends FlxState {
             if (FlxG.keys.pressed.CONTROL) {
                 if (FlxG.keys.justPressed.LEFT && curIndex >= 1) {
                     curIndex--;
-                    dBox.dialogues[0].setText(texts[curIndex]);
+                    dBox.dialogues[0].text = texts[curIndex];
                     updateGUI();
                     updateShit();
                 }
@@ -148,7 +147,7 @@ class DialogueBoxEditor extends FlxState {
                         textsProperties[curIndex] = "dad,false,normal";
                         trace("creating dialogue at " + curIndex);
                     }
-                    dBox.dialogues[0].setText(texts[curIndex]);
+                    dBox.dialogues[0].text = texts[curIndex];
                     updateGUI();
                     updateShit();
                 }
@@ -157,7 +156,7 @@ class DialogueBoxEditor extends FlxState {
                     changePropertiesValue(1, bool);
                 }
                 if (FlxG.keys.justPressed.ENTER) {
-                    dBox.dialogues[0].setText(texts[curIndex]);
+                    dBox.dialogues[0].text = texts[curIndex];
                     updateShit();
                 }
                 if (FlxG.keys.justPressed.S) {
@@ -179,11 +178,11 @@ class DialogueBoxEditor extends FlxState {
                     if (letters.indexOf(FlxG.keys.getIsDown()[0].ID.toString().toLowerCase()) != -1) {
                         if (FlxG.keys.pressed.SHIFT) {
                             texts[curIndex] += FlxG.keys.getIsDown()[0].ID.toString().toUpperCase();
-                            dBox.dialogues[0].addToText(FlxG.keys.getIsDown()[0].ID.toString().toUpperCase());
+                            dBox.dialogues[0].text += FlxG.keys.getIsDown()[0].ID.toString().toUpperCase();
                         }
                         else {
                             texts[curIndex] += FlxG.keys.getIsDown()[0].ID.toString().toLowerCase();
-                            dBox.dialogues[0].addToText(FlxG.keys.getIsDown()[0].ID.toString().toLowerCase());
+                            dBox.dialogues[0].text += FlxG.keys.getIsDown()[0].ID.toString().toLowerCase();
                         }
                     }
                 }
@@ -195,12 +194,12 @@ class DialogueBoxEditor extends FlxState {
         
                 if (FlxG.keys.justPressed.SPACE) {
                     texts[curIndex] += " ";
-                    dBox.dialogues[0].addToText(" ");
+                    dBox.dialogues[0].text += " ";
                 }
         
                 if (FlxG.keys.justPressed.ENTER) {
                     texts[curIndex] += "\n";
-                    dBox.dialogues[0].addToText("\n");
+                    dBox.dialogues[0].text += "\n";
                 }
         
                 if (FlxG.keys.pressed.ESCAPE) {
