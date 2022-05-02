@@ -46,8 +46,8 @@ class UpdateState extends FlxState {
         add(verText);
 
         var infoText = new FlxText();
-        infoText.text = Main.gitJson.body;
-        infoText.size = 14;
+		infoText.size = 14;
+		infoText.textField.htmlText = Markdown.markdownToHtml(Main.gitJson.body);
         infoText.screenCenter(X);
         infoText.y = verText.y + verText.height + 20;
         add(infoText);
@@ -122,7 +122,7 @@ class OutdatedState extends FlxState {
 
         var text = new FlxText();
         text.size = 24;
-        text.text = 'You are on a older version!\nDo you want to update the game?\n${KeyBind.controlsMap.get(ACCEPT)[0].toString()} - Yes  |  ${KeyBind.controlsMap.get(BACK)[0].toString()} - No';
+        text.text = 'You are on a older version!\nDo you want to update the game?\n\n${KeyBind.controlsMap.get(ACCEPT)[0].toString()} - Yes       |       ${KeyBind.controlsMap.get(BACK)[0].toString()} - No';
         text.screenCenter();
         add(text);
     }
