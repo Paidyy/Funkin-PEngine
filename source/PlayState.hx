@@ -342,7 +342,7 @@ class PlayState extends MusicBeatState {
 		}
 
 		if (FileSystem.exists("mods/songs/" + SONG.song.toLowerCase() + "/dialogue.txt")) {
-			dialogue = CoolUtil.coolTextFile("mods/songs/" + SONG.song.toLowerCase() + "/dialogue.txt", true);
+			dialogue = CoolUtil.coolTextFile("mods/songs/" + SONG.song.toLowerCase() + "/dialogue.txt");
 		}
 		else if (FileSystem.exists("assets/data/" + SONG.song.toLowerCase() + "/dialogue.txt")) {
 			dialogue = CoolUtil.coolTextFile(Paths.txt(SONG.song.toLowerCase() + '/dialogue'));
@@ -1081,12 +1081,15 @@ class PlayState extends MusicBeatState {
 
 			switch (swagCounter) {
 				case 0:
-					healthBar.alpha = 1;
-					healthBarBG.alpha = 1;
+					if (!selectedSongPosition) {
+						healthBar.alpha = 1;
+						healthBarBG.alpha = 1;
+					}
 					FlxG.sound.play(Paths.sound('intro3'), 0.6);
 				case 1:
 					if (curSong.toLowerCase() != "winter-horrorland") {
-						iconP2.alpha = 1;
+						if (!selectedSongPosition)
+							iconP2.alpha = 1;
 					}
 					var ready:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[0], "shared"));
 					ready.scrollFactor.set();
@@ -1105,7 +1108,8 @@ class PlayState extends MusicBeatState {
 					});
 					FlxG.sound.play(Paths.sound('intro2'), 0.6);
 				case 2:
-					iconP1.alpha = 1;
+					if (!selectedSongPosition)
+						iconP1.alpha = 1;
 					var set:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[1], "shared"));
 					set.scrollFactor.set();
 
@@ -1122,7 +1126,8 @@ class PlayState extends MusicBeatState {
 					});
 					FlxG.sound.play(Paths.sound('intro1'), 0.6);
 				case 3:
-					scoreTxt.alpha = 1;
+					if (!selectedSongPosition)
+						scoreTxt.alpha = 1;
 					var go:FlxSprite = new FlxSprite();
 					trace(curNoteAsset);
 					if (curNoteAsset == "default") {
@@ -1284,6 +1289,10 @@ class PlayState extends MusicBeatState {
 							accuracy.addNote();
 						}
 					}
+
+					if (sustainNote.strumTime < songPositionCustom) {
+						sustainNote.canBeMissed = true;
+					}
 				}
 
 				swagNote.mustPress = gottaHitNote;
@@ -1307,6 +1316,10 @@ class PlayState extends MusicBeatState {
 					else if (!swagNote.mustPress && playAs == "dad") {
 						accuracy.addNote();
 					}
+				}
+
+				if (swagNote.strumTime < songPositionCustom) {
+					swagNote.canBeMissed = true;
 				}
 
 			}
@@ -2272,7 +2285,7 @@ class PlayState extends MusicBeatState {
 		}
 		*/
 
-		if (health <= 0 && !isMultiplayer) {
+		if (health <= 0 && !isMultiplayer && !selectedSongPosition) {
 			if (playAs == "bf") {
 				bf.stunned = true;
 			}
@@ -2578,9 +2591,15 @@ class PlayState extends MusicBeatState {
 		// Timer.delay(sub.destroy, 5 * 1000);
 	}
 
+	function luaClose() {
+		if (lua != null) {
+			lua.close();
+		}
+	}
+
 	function endSong():Void {
 		luaCall("onEndSong");
-		lua.close();
+		luaClose();
 		canPause = false;
 
 		timeLeftText.alpha = 0.0;
