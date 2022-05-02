@@ -41,6 +41,8 @@ class FreeplayState extends MusicBeatState {
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 
+	var erectMode = false;
+
 	var bg:FlxSprite;
 
 	private var grpSongs:FlxTypedGroup<Alphabet>;
@@ -48,13 +50,14 @@ class FreeplayState extends MusicBeatState {
 
 	private var iconArray:Array<HealthIcon> = [];
 
+	public function new(?erectFreeplay:Bool = false) {
+		erectMode = erectFreeplay;
+		super();
+	}
+
+	var erectSongExists = false;
+
 	override function create() {
-		var initSonglist = CoolUtil.coolTextFile(Paths.txt('freeplaySonglist'));
-
-		for (i in 0...initSonglist.length) {
-			songs.push(new SongMetadata(initSonglist[i], "week0", 'gf', "#ff82a5"));
-		}
-
 		/* 
 			if (FlxG.sound.music != null)
 			{
@@ -78,23 +81,29 @@ class FreeplayState extends MusicBeatState {
 			StoryMenuState.setWeekUnlocked('week$index');
 		}
 
-		if (StoryMenuState.isWeekUnlocked("week0") || isDebug)
-			addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], "week1", ['dad'], "#9471e3");
+		if (!erectMode) {
+			songs.push(new SongMetadata("Tutorial", "week0", 'gf', "#ff82a5"));
+			if (StoryMenuState.isWeekUnlocked("week0") || isDebug)
+				addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], "week1", ['dad'], "#9471e3");
 
-		if (StoryMenuState.isWeekUnlocked("week1") || isDebug)
-			addWeek(['Spookeez', 'South', 'Monster'], "week2", ['spooky', 'spooky', 'monster'], "#2a3d42");
+			if (StoryMenuState.isWeekUnlocked("week1") || isDebug)
+				addWeek(['Spookeez', 'South', 'Monster'], "week2", ['spooky', 'spooky', 'monster'], "#2a3d42");
 
-		if (StoryMenuState.isWeekUnlocked("week2") || isDebug)
-			addWeek(['Pico', 'Philly', 'Blammed'], "week3", ['pico'], "#b0284f");
+			if (StoryMenuState.isWeekUnlocked("week2") || isDebug)
+				addWeek(['Pico', 'Philly', 'Blammed'], "week3", ['pico'], "#b0284f");
 
-		if (StoryMenuState.isWeekUnlocked("week3") || isDebug)
-			addWeek(['Satin-Panties', 'High', 'Milf'], "week4", ['mom'], "#ff82a5");
+			if (StoryMenuState.isWeekUnlocked("week3") || isDebug)
+				addWeek(['Satin-Panties', 'High', 'Milf'], "week4", ['mom'], "#ff82a5");
 
-		if (StoryMenuState.isWeekUnlocked("week4") || isDebug)
-			addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], "week5", ['parents-christmas', 'parents-christmas', 'monster-christmas'], "#e3edff");
+			if (StoryMenuState.isWeekUnlocked("week4") || isDebug)
+				addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], "week5", ['parents-christmas', 'parents-christmas', 'monster-christmas'], "#e3edff");
 
-		if (StoryMenuState.isWeekUnlocked("week5") || isDebug)
-			addWeek(['Senpai', 'Roses', 'Thorns'], "week6", ['senpai', 'senpai', 'spirit'], "#f593de");
+			if (StoryMenuState.isWeekUnlocked("week5") || isDebug)
+				addWeek(['Senpai', 'Roses', 'Thorns'], "week6", ['senpai', 'senpai', 'spirit'], "#f593de");
+		}
+		else {
+			//put erect songs here
+		}
 
 		/*
 		if (StoryMenuState.isWeekUnlocked("week6") || isDebug)
@@ -103,32 +112,44 @@ class FreeplayState extends MusicBeatState {
 
 		var otherSongsAdded = [];
 
+		
+
 		var pengine_weeks_path = "mods/weeks/";
-		for (file in FileSystem.readDirectory(pengine_weeks_path)) {
-			var path = haxe.io.Path.join([pengine_weeks_path, file]);
-			if (FileSystem.isDirectory(path)) {
-				var data = Yaml.parse(File.getContent(path + "/config.yml"));
-				if (StoryMenuState.isWeekUnlocked(Std.string(data.get('unlockedAfter')))) {
-					var map:TObjectMap<Dynamic, Dynamic> = data.get('songs');
-					var songs:Array<String> = [];
-					var characters:Array<String> = [];
-					for (song in map.keys()) {
-						songs.push(song);
-						otherSongsAdded.push(song.toLowerCase());
-						characters.push(data.get("songs").get(song).get("character"));
+		weekModsFolderContent = FileSystem.readDirectory(pengine_weeks_path);
+		for (file in weekModsFolderContent) {
+			if (file.endsWith("-erect"))
+				erectSongExists = true;
+			if (erectMode ? file.endsWith("-erect") : !file.endsWith("-erect")) {
+				var path = haxe.io.Path.join([pengine_weeks_path, file]);
+				if (FileSystem.isDirectory(path)) {
+					var data = Yaml.parse(File.getContent(path + "/config.yml"));
+					if (StoryMenuState.isWeekUnlocked(Std.string(data.get('unlockedAfter')))) {
+						var map:TObjectMap<Dynamic, Dynamic> = data.get('songs');
+						var songs:Array<String> = [];
+						var characters:Array<String> = [];
+						for (song in map.keys()) {
+							songs.push(song);
+							otherSongsAdded.push(song.toLowerCase());
+							characters.push(data.get("songs").get(song).get("character"));
+						}
+						addWeek(songs, Std.string(data.get('weekID')), characters, Std.string(data.get('color')));
 					}
-					addWeek(songs, Std.string(data.get('weekID')), characters, Std.string(data.get('color')));
 				}
 			}
 		}
 
 		var pengine_song_path = "mods/songs/";
-		for (file in FileSystem.readDirectory(pengine_song_path)) {
-			if (!otherSongsAdded.contains(file.toLowerCase())) {
-				var path = haxe.io.Path.join([pengine_song_path, file]);
-				if (FileSystem.isDirectory(path)) {
-					var folder = path.split("/")[2];
-					addWeek([folder], "week-1", null, null);
+		songModsFolderContent = FileSystem.readDirectory(pengine_song_path);
+		for (file in songModsFolderContent) {
+			if (file.endsWith("-erect"))
+				erectSongExists = true;
+			if (erectMode ? file.endsWith("-erect") : !file.endsWith("-erect")) {
+				if (!otherSongsAdded.contains(file.toLowerCase())) {
+					var path = haxe.io.Path.join([pengine_song_path, file]);
+					if (FileSystem.isDirectory(path)) {
+						var folder = path.split("/")[2];
+						addWeek([folder], "week-1", null, null);
+					}
 				}
 			}
 		}
@@ -199,7 +220,7 @@ class FreeplayState extends MusicBeatState {
 		var downBarText:FlxText = new FlxText(0, 0, 0, "", 18);
 		downBarText.setFormat(Paths.font("vcr.ttf"), downBarText.size, FlxColor.WHITE);
 		downBarText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
-		downBarText.text = "SPACE to listen to the current song     R to select random song";
+		downBarText.text = "SPACE - Listen to song     R - Select Random Song" + (erectSongExists ?  "     E - Toggle Erect Mode" : "");
 		downBarText.screenCenter(X);
 
 		var downBarBG:FlxSprite = new FlxSprite(0, FlxG.height - downBarText.height - 5).makeGraphic(FlxG.width, Std.int(downBarText.height) + 6, 0xFF000000);
@@ -249,6 +270,14 @@ class FreeplayState extends MusicBeatState {
 		vocals = new FlxSound();
 
 		super.create();
+	}
+
+	override public function onFocus() {
+		super.onFocus();
+		
+		if (songModsFolderContent.length != FileSystem.readDirectory("mods/songs/").length) {
+			FlxG.switchState(new FreeplayState());
+		}
 	}
 
 	public function addSong(songName:String, week:String, songCharacter:String, freeplayColor:String) {
@@ -312,6 +341,11 @@ class FreeplayState extends MusicBeatState {
 			vocals.stop();
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			FlxG.switchState(new MainMenuState());
+		}
+
+
+		if (FlxG.keys.justPressed.E && erectSongExists) {
+			FlxG.switchState(new FreeplayState(!erectMode));
 		}
 
 		if (FlxG.keys.justPressed.SPACE) {
@@ -439,9 +473,11 @@ class FreeplayState extends MusicBeatState {
 		if (curDifficulty > 2)
 			curDifficulty = 0;
 
-		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
-		#end
+		if (songs[curSelected] != null) {
+			#if !switch
+			intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+			#end
+		}
 
 		switch (curDifficulty) {
 			case 0:
@@ -469,47 +505,37 @@ class FreeplayState extends MusicBeatState {
 
 		// selector.y = (70 * curSelected) + 30;
 
-		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
-		// lerpScore = 0;
-		#end
-
-		/*
-		here check if it's a custom song
-
-		if (!SysFile.exists(Paths.instNoLib(songs[curSelected].songName))) {
-			trace("Custom song selected.");
-		}
-		*/
-
 		doubleSpace = 0;
 
 		var bullShit:Int = 0;
 
-		for (i in 0...iconArray.length) {
-			iconArray[i].alpha = 0.6;
-		}
+		if (songs[curSelected] != null) {
+			#if !switch
+			intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+			// lerpScore = 0;
+			#end
 
-		iconArray[curSelected].alpha = 1;
-
-		for (item in grpSongs.members) {
-			item.targetY = bullShit - curSelected;
-			bullShit++;
-
-			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
-
-			if (item.targetY == 0) {
-				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
+			for (i in 0...iconArray.length) {
+				iconArray[i].alpha = 0.6;
 			}
-		}
 
-		FlxTween.color(bg,
-			0.2,
-			bg.color,
-			FlxColor.fromString(songs[curSelected].freeplayColor)
-		);
+			iconArray[curSelected].alpha = 1;
+
+			for (item in grpSongs.members) {
+				item.targetY = bullShit - curSelected;
+				bullShit++;
+
+				item.alpha = 0.6;
+				// item.setGraphicSize(Std.int(item.width * 0.8));
+
+				if (item.targetY == 0) {
+					item.alpha = 1;
+					// item.setGraphicSize(Std.int(item.width));
+				}
+			}
+
+			FlxTween.color(bg, 0.2, bg.color, FlxColor.fromString(songs[curSelected].freeplayColor));
+		}
 	}
 
 	var doubleSpace:Int;
@@ -519,6 +545,10 @@ class FreeplayState extends MusicBeatState {
 	var camMain:FlxCamera;
 
 	var vocals:FlxSound;
+
+	var weekModsFolderContent:Array<String>;
+
+	var songModsFolderContent:Array<String>;
 }
 
 class SongMetadata {
