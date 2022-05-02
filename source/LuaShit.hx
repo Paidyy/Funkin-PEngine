@@ -37,6 +37,46 @@ class LuaShit {
         setVariable("windowWidth", FlxG.width);
         setVariable("windowHeight", FlxG.height);
 
+		Lua_helper.add_callback(lua, "getMousePosition", function() {
+			return [FlxG.mouse.x, FlxG.mouse.y];
+		});
+
+		Lua_helper.add_callback(lua, "isMouseJustLeftPressed", function() {
+			return FlxG.mouse.justPressed;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseJustRightPressed", function() {
+			return FlxG.mouse.justPressedRight;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseJustMiddlePressed", function() {
+			return FlxG.mouse.justPressedMiddle;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseLeftPressed", function() {
+			return FlxG.mouse.pressed;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseRightPressed", function() {
+			return FlxG.mouse.pressedRight;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseMiddlePressed", function() {
+			return FlxG.mouse.pressedMiddle;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseLeftJustReleased", function() {
+			return FlxG.mouse.justReleased;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseRightJustReleased", function() {
+			return FlxG.mouse.justPressedRight;
+		});
+
+		Lua_helper.add_callback(lua, "isMouseMiddleJustReleased", function() {
+			return FlxG.mouse.justPressedMiddle;
+		});
+
 		Lua_helper.add_callback(lua, "saveSet", function(field:String, value:String) {
 			Reflect.setField(FlxG.save.data, field, value);
 			FlxG.save.flush();
