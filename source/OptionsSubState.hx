@@ -248,7 +248,7 @@ class OptionSubState extends FlxSubState {
 
 			if (option.hasCheckBox) {
 				option.checkbox.x = option.x + option.width + 10;
-				option.checkbox.y = option.y;
+				option.checkbox.y = option.y - 50;
 				option.checkbox.ID = curIndex;
 				option.checkbox.scrollFactor.set(option.scrollFactor.x, option.scrollFactor.y);
 				checkboxes.add(option.checkbox);
@@ -314,7 +314,7 @@ class OptionSubState extends FlxSubState {
 	public function setOptionText(i:Int, s:String) {
 		for (alphab in items) {
 			if (alphab.ID == i) {
-				alphab.setText(s);
+				alphab.text = s;
 				alphab.screenCenter(X);
 				break;
 			}
@@ -550,11 +550,9 @@ class ControlsItem extends FlxTypedSpriteGroup<Alphabet> {
 		key.x += 150;
 
 		bind1 = new Alphabet(key.x + 450, 0, bind1Text, false);
-		bind1.y -= bind1.height;
 		bind1.scrollFactor.set();
 
 		bind2 = new Alphabet(bind1.x + 300, 0, bind2Text, false);
-		bind2.y -= bind2.height;
 		bind2.scrollFactor.set();
 
 		add(key);
@@ -705,18 +703,18 @@ class OptionsControlsSubstate extends FlxSubState {
 		items.forEach(function(item:ControlsItem) {
 			if (item.ID == curSelected) {
 				if (curTab == 0)
-					item.bind1.setText("...");
+					item.bind1.text = "...";
 				else
-					item.bind2.setText("...");
+					item.bind2.text = "...";
 
 				if (FlxG.keys.anyJustPressed([ANY])) {
 					waiting = false;
 					var curKey = FlxG.keys.getIsDown()[0].ID;
 					Controls.bind(KeyBind.typeFromString(item.key.text), curKey, curTab);
 					if (curTab == 0)
-						item.bind1.setText(curKey.toString());
+						item.bind1.text = curKey.toString();
 					else
-						item.bind2.setText(curKey.toString());
+						item.bind2.text = curKey.toString();
 				}
 			}
 		});
