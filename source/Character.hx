@@ -37,7 +37,8 @@ class Character extends AnimatedSprite {
 
 		antialiasing = true;
 
-		if (Paths.isCustomPath(CoolUtil.getCharacterPath(curCharacter))) {
+		if (Paths.isCustomPath(Paths.file('images/${"characters/" + curCharacter + "/" + curCharacter}.xml'))) {
+			trace("custom character: " + curCharacter);
 			var path = CoolUtil.getCharacterPath(curCharacter) + curCharacter;
 			if (path.startsWith("mods/skins/")) {
 				var spltPath = path.split("/");
@@ -48,27 +49,25 @@ class Character extends AnimatedSprite {
 				}
 				path = path.substring(0, path.length - 1);
 			}
-			if (FileSystem.exists(path + ".txt")) {
-				frames = Paths.PEgetPackerAtlas(path);
-			}
-			else {
-				frames = Paths.PEgetSparrowAtlas(path);
-			}
+			frames = Cache.cacheCharacterAssets(curCharacter);
 		}
 		else {
-			if (FileSystem.exists(CoolUtil.getCharacterPath(curCharacter) + curCharacter + ".txt")) {
+			trace("openfl character: " + curCharacter);
+			if (openfl.utils.Assets.exists(Paths.file('images/${"characters/" + curCharacter + "/" + curCharacter}.txt'))) {
 				frames = Paths.getPackerAtlas('characters/' + curCharacter + '/' + curCharacter);
 			}
 			else {
 				frames = Paths.getSparrowAtlas('characters/' + curCharacter + '/' + curCharacter);
 			}
+			Cache.cacheCharacterConfig(curCharacter);
 		}
 
 		var idleAnim = "idle";
 
-		setConfig(CoolUtil.getCharacterPath(curCharacter) + 'config.yml');
+		setConfigPath(CoolUtil.getCharacterPath(curCharacter) + 'config.yml');
 
-		if (FileSystem.exists(configPath)) {
+		if (Cache.charactersConfigs.exists(curCharacter)) {
+			config = Cache.charactersConfigs.get(curCharacter);
 			if (config != null) {
 				// take a shot everytime you see != null here
 				var map:AnyObjectMap = config.get('animations');
@@ -379,11 +378,8 @@ class Character extends AnimatedSprite {
 		}
 	}
 
-	public function setConfig(path:String) {
+	public function setConfigPath(path:String) {
 		configPath = path;
-		if (FileSystem.exists(configPath)) {
-			config = CoolUtil.readYAML(configPath);
-		}
 	}
 
 	var missColorTransform:Bool = false;
