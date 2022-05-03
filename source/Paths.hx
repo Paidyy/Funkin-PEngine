@@ -35,7 +35,7 @@ class Paths {
 	}
 
 	public static function isCustomPath(arg0:String) {
-		if (Assets.exists(arg0)) {
+		if (OpenFlAssets.exists(arg0)) {
 			return false;
 		}
 		return true;
@@ -168,7 +168,7 @@ class Paths {
 	}
 
 	inline static public function getLuaPath(song:String) {
-		return 'mods/songs/${song.toLowerCase()}/script.lua';
+		return CoolUtil.getSongPath(song.toLowerCase(), true) + 'script.lua';
 	}
 
 	static public function skinIcon(char:String):String {
@@ -185,15 +185,19 @@ class Paths {
 	}
 
 	inline static public function modsIcon(char:String) {
-		return 'mods/characters/$char/icon.png';
+		return CoolUtil.getCharacterPath(char) + 'icon.png';
 	}
 
 	inline static public function PEgetSparrowAtlas(key:String, ?library:String) {
 		#if sys
-		return FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(sys.io.File.getBytes(key + ".png")), sys.io.File.getContent(key + ".xml"));
+		return FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes(key + ".png")), File.getContent(key + ".xml"));
 		#else
 		return Paths.getSparrowAtlas('DADDY_DEAREST');
 		#end
+	}
+
+	inline static public function PEgetPackerAtlas(key:String) {
+		return FlxAtlasFrames.fromSpriteSheetPacker(BitmapData.fromBytes(File.getBytes(key + ".png")), File.getContent(key + ".txt"));
 	}
 
 	/*
@@ -248,9 +252,5 @@ class Paths {
 
 	inline static public function getPackerAtlas(key:String, ?library:String) {
 		return FlxAtlasFrames.fromSpriteSheetPacker(image(key, library), file('images/$key.txt', library));
-	}
-
-	inline static public function PEgetPackerAtlas(key:String) {
-		return FlxAtlasFrames.fromSpriteSheetPacker(BitmapData.fromBytes(File.getBytes(key + ".png")), File.getContent(key + ".txt"));
 	}
 }
