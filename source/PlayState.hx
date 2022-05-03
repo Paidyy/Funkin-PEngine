@@ -115,7 +115,7 @@ class PlayState extends MusicBeatState {
 	private static var sub:FlxText;
 	private static var sub_bg:FlxSprite;
 
-	public var stage:Stage;
+	public var stage:Stage = null;
 
 	public var isMultiplayer:Bool = false;
 
@@ -571,6 +571,14 @@ class PlayState extends MusicBeatState {
 		add(dadLayer);
 		add(bfLayer);
 
+		try {
+			add(stage.frontLayer);
+		}
+		catch (exc) {
+			trace("Failed to load stage (front layer):" + tempStageName);
+			new Notification("Failed to load stage (front layer):" + tempStageName).show();
+		}
+
 		if (stage.name == 'tank') {
 			add(stage.bgTank0);
 			add(stage.bgTank1);
@@ -853,7 +861,7 @@ class PlayState extends MusicBeatState {
 		}
 	}
 
-	public function updateChar(char:Dynamic) {
+	public function updateChar(char:Dynamic, ?ignoreIcons:Bool = false) {
 		switch (char) {
 			case 0, "gf":
 				gfLayer.forEach(b -> gfLayer.remove(b));
@@ -869,13 +877,17 @@ class PlayState extends MusicBeatState {
 			case 1, "bf":
 				bfLayer.forEach(b -> bfLayer.remove(b));
 				bfLayer.add(bf);
-				if (playAs == "bf") {
-					iconP1.setChar(bf.curCharacter, true);
-				} else {
-					iconP2.setChar(bf.curCharacter, false);
+				if (!ignoreIcons) {
+					if (playAs == "bf") {
+						iconP1.setChar(bf.curCharacter, PlayState.SONG.swapBfGui ? false : true);
+					}
+					else {
+						iconP2.setChar(bf.curCharacter, PlayState.SONG.swapBfGui ? true : false);
+					}
+					healthBar.createFilledBar(CoolUtil.getDominantColor(iconP2), CoolUtil.getDominantColor(iconP1));
+					healthBar.value = health;
 				}
-				healthBar.createFilledBar(CoolUtil.getDominantColor(iconP2), CoolUtil.getDominantColor(iconP1));
-				healthBar.value = health;
+
 				/*
 				if (bf.config != null) {
 					bf.x = Std.parseFloat(Std.string(bf.config.get("X")));
@@ -885,13 +897,17 @@ class PlayState extends MusicBeatState {
 			case 2, "dad":
 				dadLayer.forEach(b -> dadLayer.remove(b));
 				dadLayer.add(dad);
-				if (playAs == "bf") {
-					iconP2.setChar(dad.curCharacter, false);
-				} else {
-					iconP1.setChar(dad.curCharacter, true);
+
+				if (!ignoreIcons) {
+					if (playAs == "bf") {
+						iconP2.setChar(dad.curCharacter, PlayState.SONG.swapBfGui ? true : false);
+					}
+					else {
+						iconP1.setChar(dad.curCharacter, PlayState.SONG.swapBfGui ? false : true);
+					}
+					healthBar.createFilledBar(CoolUtil.getDominantColor(iconP2), CoolUtil.getDominantColor(iconP1));
+					healthBar.value = health;
 				}
-				healthBar.createFilledBar(CoolUtil.getDominantColor(iconP2), CoolUtil.getDominantColor(iconP1));
-				healthBar.value = health;
 				/*
 				if (dad.config != null) {
 					dad.x = Std.parseFloat(Std.string(dad.config.get("X")));
@@ -1299,7 +1315,7 @@ class PlayState extends MusicBeatState {
 
 				if (swagNote.action.toLowerCase() == "change character") {
 					var splicedValue = swagNote.actionValue.split(", ");
-					Cache.cacheCharacter(splicedValue[0], splicedValue[1]);
+					Cache.cacheCharacter(splicedValue[0], splicedValue[1], true);
 				}
 				if (swagNote.action.toLowerCase() == "change stage") {
 					Cache.cacheStage(swagNote.actionValue);
@@ -1985,9 +2001,9 @@ class PlayState extends MusicBeatState {
 
 		if (FlxG.keys.justPressed.NINE) {
 			if (iconP1.actualChar == 'bf-old')
-				iconP1.setChar(SONG.player1, true);
+				iconP1.setChar(SONG.player1, PlayState.SONG.swapBfGui ? false : true);
 			else
-				iconP1.setChar('bf-old', true);
+				iconP1.setChar('bf-old', PlayState.SONG.swapBfGui ? false : true);
 		}
 
 		switch (stage.name) {
@@ -4140,7 +4156,12 @@ class PlayState extends MusicBeatState {
 	}
 
 	public function changeStage(name:String) {
-		remove(stage);
+		for (asset in stage) {
+			stage.remove(asset);
+		}
+		for (asset in stage.frontLayer) {
+			stage.frontLayer.remove(asset);
+		}
 
 		Paths.setCurrentStage(name);
 
@@ -4150,10 +4171,26 @@ class PlayState extends MusicBeatState {
 			stage = new Stage(name);
 		}
 		stage.applyStageShitToPlayState();
+
+		// im losing my mind in haxeflixel
+		
+		remove(gfLayer);
+		remove(bfLayer);
+		remove(dadLayer);
+
+		add(stage);
+
+		add(gfLayer);
+		add(bfLayer);
+		add(dadLayer);
+		updateChar("gf", true);
+		updateChar("bf", true);
+		updateChar("dad", true);
 		updateCharPos("bf");
         updateCharPos("dad");
         updateCharPos("gf");
-		add(stage);
+		
+		add(stage.frontLayer);
 	}
 
 	public function changeCharacter(char:String, newChar:String) {
@@ -4186,9 +4223,11 @@ class PlayState extends MusicBeatState {
 		updateChar(char);
 		updateCharPos(char);
 
-		gf.scrollFactor.set(stage.gfScrollFactorX, stage.gfScrollFactorY);
-		dad.scrollFactor.set(stage.dadScrollFactorX, stage.dadScrollFactorY);
-		bf.scrollFactor.set(stage.bfScrollFactorX, stage.bfScrollFactorY);
+		if (stage != null) {
+			gf.scrollFactor.set(stage.gfScrollFactorX, stage.gfScrollFactorY);
+			dad.scrollFactor.set(stage.dadScrollFactorX, stage.dadScrollFactorY);
+			bf.scrollFactor.set(stage.bfScrollFactorX, stage.bfScrollFactorY);
+		}
 	}
 
 	function luaCall(func, ?args) {
