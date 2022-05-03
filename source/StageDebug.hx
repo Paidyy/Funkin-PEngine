@@ -76,6 +76,23 @@ class StageDebug extends MusicBeatState {
 
             daLoop++;
         }
+
+		for (penis in stage.frontLayer) {
+			var text:FlxText = new FlxText(10, 42 + (23 * daLoop), 0,
+				penis.name + " : " + "[ " + penis.x + ", " + penis.y + ", " + penis.sizeMultiplier + "]", 15);
+			text.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
+			text.scrollFactor.set();
+			text.color = FlxColor.GRAY;
+			if (text.width + text.x > dumbTextsWidthWX) {
+				dumbTextsWidthWX = text.width + text.x;
+			}
+			dumbTexts.add(text);
+
+			if (pushList)
+				imageList.push(penis.name);
+
+			daLoop++;
+        }
 	}
 
     function gendumbTexts2(pushList:Bool = true):Void {
@@ -152,6 +169,8 @@ class StageDebug extends MusicBeatState {
 
         add(characters);
 
+		add(stage.frontLayer);
+ 
         textImg = new FlxText(15, 15, 0, "Images:", 20);
         textImg.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
         textImg.scrollFactor.set();
@@ -319,13 +338,20 @@ class StageDebug extends MusicBeatState {
 
         if (FlxG.keys.pressed.CONTROL && FlxG.mouse.pressed) {
             if (FlxG.mouse.justMoved) {
-                if (curTab == 0)
-                    for (penis in stage) {
-                        if (penis.name == imageList[currentSprite]) {
-                            penis.x = penis.x + (FlxG.mouse.x - oldMousePos[0]);
-                            penis.y = penis.y + (FlxG.mouse.y - oldMousePos[1]);
-                        }
-                    }
+                if (curTab == 0) {
+					for (penis in stage) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.x = penis.x + (FlxG.mouse.x - oldMousePos[0]);
+							penis.y = penis.y + (FlxG.mouse.y - oldMousePos[1]);
+						}
+					}
+					for (penis in stage.frontLayer) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.x = penis.x + (FlxG.mouse.x - oldMousePos[0]);
+							penis.y = penis.y + (FlxG.mouse.y - oldMousePos[1]);
+						}
+					}
+                }
                 if (curTab == 1)
                     for (char in characters) {
 						if (char == getCurrentChar()) {
@@ -336,20 +362,32 @@ class StageDebug extends MusicBeatState {
             }
 
             if (FlxG.mouse.wheel == 1) {
-                if (curTab == 0)
-                    for (penis in stage) {
-                        if (penis.name == imageList[currentSprite]) {
-                            penis.setAssetSize(penis.sizeMultiplier + 0.01);
-                        }
-                    }
+                if (curTab == 0) {
+					for (penis in stage) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.setAssetSize(penis.sizeMultiplier + 0.01);
+						}
+					}
+					for (penis in stage.frontLayer) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.setAssetSize(penis.sizeMultiplier + 0.01);
+						}
+					}
+                }
             }
             if (FlxG.mouse.wheel == -1) {
-                if (curTab == 0)
-                    for (penis in stage) {
-                        if (penis.name == imageList[currentSprite]) {
-                            penis.setAssetSize(penis.sizeMultiplier - 0.01);
-                        }
-                    }
+                if (curTab == 0) {
+					for (penis in stage) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.setAssetSize(penis.sizeMultiplier - 0.01);
+						}
+					}
+					for (penis in stage.frontLayer) {
+						if (penis.name == imageList[currentSprite]) {
+							penis.setAssetSize(penis.sizeMultiplier - 0.01);
+						}
+					}
+                }
             }
         }
         if (FlxG.mouse.justReleased) {
@@ -432,7 +470,17 @@ class StageDebug extends MusicBeatState {
                 images.get(image.name).set('x', image.x);
 				images.get(image.name).set('y', image.y);
                 images.get(image.name).set('size', image.sizeMultiplier);
+				images.get(image.name).set('layer', image.layer);
             }
+			for (image in stage.frontLayer) {
+				if (images.get(image.name) == null) {
+					images.set(image.name, new AnyObjectMap());
+				}
+				images.get(image.name).set('x', image.x);
+				images.get(image.name).set('y', image.y);
+				images.get(image.name).set('size', image.sizeMultiplier);
+				images.get(image.name).set('layer', image.layer);
+			}
             stage.config.set('images', images);
 			var renderedYaml = Yaml.render(stage.config);
             trace("saving config to: " + stage.configPath);

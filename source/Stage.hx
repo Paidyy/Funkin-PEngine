@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxBasic;
 import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.util.FlxColor;
 import haxe.xml.Access;
@@ -29,9 +30,18 @@ class Stage extends FlxTypedGroup<Dynamic> {
         "school",
         "schoolEvil"
     ];
-    public var name:String;
+    public var name:String = "stage";
     public var camZoom:Float = 0.9;
 
+	public var config:AnyObjectMap = new AnyObjectMap();
+	public var configPath:String = null;
+
+	public var bfScrollFactorX:Float = 1;
+	public var dadScrollFactorX:Float = 1;
+	public var gfScrollFactorX:Float = 1;
+	public var bfScrollFactorY:Float = 1;
+	public var dadScrollFactorY:Float = 1;
+	public var gfScrollFactorY:Float = 1;
 
     //Character position for current stage
     public var gfX:Float = 400;
@@ -573,9 +583,10 @@ class Stage extends FlxTypedGroup<Dynamic> {
 								stageSprite.x = keys.get("x");
 							if (keys.get("y") != null)
 								stageSprite.y = keys.get("y");
-							if (keys.get("size") != null) {
+							if (keys.get("size") != null)
 								stageSprite.setAssetSize(keys.get("size"));
-							}
+							if (keys.get("layer") != null)
+								stageSprite.layer = keys.get("layer");
 							if (keys.get("scrollFactorX") != null)
 								stageSprite.scrollFactor.x = keys.get("scrollFactorX");
 							if (keys.get("scrollFactorY") != null)
@@ -588,12 +599,35 @@ class Stage extends FlxTypedGroup<Dynamic> {
         }
 	}
 
+    public var frontLayer:FlxTypedGroup<Dynamic> = new FlxTypedGroup<Dynamic>();
+
+    /**
+     * Automatically adds a asset to backLayer or frontLayer
+     * @param obj The Asset
+     */
+    override public function add(obj:Dynamic):Dynamic {
+        if (obj.layer != null) {
+			if (obj.layer == 0) {
+				return super.add(obj);
+			}
+			else {
+				return frontLayer.add(obj);
+			}
+        }
+		return super.add(obj);
+    }
+
     public function onBeatHit() {
         for (stageSprite in this) {
             if (stageSprite.animation != null && stageSprite.animation.exists("bop")) {
                 stageSprite.animation.play("bop", true);
             }
         }
+		for (stageSprite in frontLayer) {
+			if (stageSprite.animation != null && stageSprite.animation.exists("bop")) {
+				stageSprite.animation.play("bop", true);
+			}
+		}
     }
 
     public function setConfig(path:String) {
@@ -602,16 +636,6 @@ class Stage extends FlxTypedGroup<Dynamic> {
 			config = CoolUtil.readYAML(configPath);
 		}
 	}
-
-	public var config:AnyObjectMap = new AnyObjectMap();
-	public var configPath:String = "";
-
-	public var bfScrollFactorX:Float = 1;
-    public var dadScrollFactorX:Float = 1;
-    public var gfScrollFactorX:Float = 1;
-    public var bfScrollFactorY:Float = 1;
-    public var dadScrollFactorY:Float = 1;
-    public var gfScrollFactorY:Float = 1;
 }
 
 class StageAsset extends FlxSprite {
@@ -619,6 +643,13 @@ class StageAsset extends FlxSprite {
     public var name:String;
 
     public var sizeMultiplier:Float = 1.0;
+
+    /**
+	 * if layer is 0 then the asset is under the characters
+     * 
+     * if layer is 1 then the asset is above the characters
+     */
+    public var layer:Int = 0;
 
     public function new(?X:Float = 0, ?Y:Float = 0, ?name:String) {
         this.name = name;
