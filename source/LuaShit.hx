@@ -290,7 +290,7 @@ class LuaShit {
 
         // Caches character so it doesnt lag when changing the character
         Lua_helper.add_callback(lua, "cacheCharacter", function(char:String, daChar:String) {
-            Cache.cacheCharacter(char, daChar);
+			Cache.cacheCharacter(char, daChar, true);
         });
 
         // Changes character
