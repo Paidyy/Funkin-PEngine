@@ -1,5 +1,9 @@
 package;
 
+import flixel.system.FlxAssets.FlxGraphicAsset;
+import flixel.FlxSprite;
+import openfl.display.BitmapData;
+import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.Resource;
 import sys.io.File;
 import sys.FileSystem;
@@ -12,6 +16,8 @@ import openfl.media.Sound;
 class Cache {
     public static var characters:Map<String, Character> = new Map<String, Character>();
 	public static var bfs:Map<String, Boyfriend> = new Map<String, Boyfriend>();
+	public static var charactersAssets:Map<String, CharacterCache> = new Map<String, CharacterCache>();
+	public static var charactersConfigs:Map<String, Dynamic> = new Map<String, Dynamic>();
 
     public static var stages:Map<String, Stage> = new Map<String, Stage>();
 
@@ -19,35 +25,83 @@ class Cache {
 
     public static var bytes:Map<String, Bytes> = new Map<String, Bytes>();
 
-    public static function cacheCharacter(char, daChar) {
+	public static function cacheCharacter(char, daChar, ?forceCache:Bool = false):Dynamic {
 		if (char == "bf") {
-            if (!Cache.bfs.exists(daChar)) {
-                trace("caching character (boyfriend): " + daChar + "...");
-                Cache.bfs.set(daChar, new Boyfriend(0, 0, daChar));
-            }
-		} else {
-            if (!Cache.characters.exists(daChar)) {
-                trace("caching character: " + daChar + "...");
-                Cache.characters.set(daChar, new Character(0, 0, daChar));
-            }
+			if (!Cache.bfs.exists(daChar) || forceCache) {
+				trace("caching character (boyfriend): " + daChar + "...");
+				Cache.bfs.set(daChar, new Boyfriend(0, 0, daChar));
+			}
+			return Cache.bfs.get(daChar);
+		}
+		else {
+			if (!Cache.characters.exists(daChar) || forceCache) {
+				trace("caching character: " + daChar + "...");
+				Cache.characters.set(daChar, new Character(0, 0, daChar));
+			}
+            return Cache.characters.get(daChar);
 		}
 	}
 
+    public static function cacheCharacterConfig(daChar) {
+		if (!Cache.charactersConfigs.exists(daChar)) {
+            if (FileSystem.exists(CoolUtil.getCharacterPath(daChar) + "config.yml")) {
+                Cache.charactersConfigs.set(daChar, CoolUtil.readYAML(CoolUtil.getCharacterPath(daChar) + "config.yml"));
+            }
+        }
+    }
+
+    public static function cacheCharacterAssets(daChar, ?forceCache:Bool = false) {
+		var path = CoolUtil.getCharacterPath(daChar) + daChar;
+		if (!Cache.charactersAssets.exists(daChar) || forceCache) {
+            trace("caching character: " + path + "...");
+            if (FileSystem.exists(path + ".txt")) {
+				Cache.charactersAssets.set(daChar, new CharacterCache(File.getBytes(path + ".png"), File.getContent(path + ".txt")));
+            }
+            else {
+				Cache.charactersAssets.set(daChar, new CharacterCache(File.getBytes(path + ".png"), File.getContent(path + ".xml")));
+            }
+        }
+		cacheCharacterConfig(daChar);
+		if (FileSystem.exists(path + ".txt")) {
+			return FlxAtlasFrames.fromSpriteSheetPacker(BitmapData.fromBytes(Cache.charactersAssets.get(daChar).imageBytes),
+				Cache.charactersAssets.get(daChar).xml);
+        }
+        else {
+			return FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(Cache.charactersAssets.get(daChar).imageBytes), 
+                Cache.charactersAssets.get(daChar).xml);
+        }
+		
+	}
+
     public static function cacheStage(name) {
-        if (!Cache.stages.exists(name)) {
+		if (Cache.stages.get(name) == null) {
             Cache.stages.set(name, new Stage(name));
         }
+		return Cache.stages.get(name);
     }
 
 	public static function cacheSound(path:String) {
-        if (!Cache.sounds.exists(path)) {
+		if (Cache.sounds.get(path) == null) {
             Cache.sounds.set(path, Sound.fromFile(path));
         }
+		return Cache.sounds.get(path);
     }
 
     public static function cacheBytes(path:String) {
-        if (!Cache.bytes.exists(path)) {
+		if (Cache.bytes.get(path) == null) {
             Cache.bytes.set(path, File.getBytes(path));
         }
+		return Cache.bytes.get(path);
+    }
+}
+
+//made this because haxeflixel asset handling is shit
+class CharacterCache {
+	public var imageBytes:Bytes;
+	public var xml:String;
+
+    public function new(imageBytes:Bytes, xml:String) {
+        this.imageBytes = imageBytes;
+        this.xml = xml;
     }
 }
