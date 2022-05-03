@@ -83,8 +83,6 @@ class ChartingState extends MusicBeatState {
 		Value should be from 1 to 4",
 
 		"Changes specific character to <value>\n
-		It can cause a 1 second lag to load a character\n
-		Using custom characters is recommended here\n
 		Value Syntax: <gf, bf, dad>, <character>\n
 		Example Value: dad, pico",
 
@@ -254,7 +252,6 @@ class ChartingState extends MusicBeatState {
 		UI_box.x = FlxG.width / 2;
 		UI_box.y = 20;
 		UI_box.x += GRID_SIZE * 3;
-		add(UI_box);
 
 		var info:FlxText = new FlxText(UI_box.x + 10, UI_box.y + UI_box.height + 10, 0, "", 15);
 		info.setFormat(Paths.font("vcr.ttf"), info.size, FlxColor.WHITE, LEFT);
@@ -274,6 +271,8 @@ class ChartingState extends MusicBeatState {
 		bpmTxt = new FlxText(UI_box.x + UI_box.width + 10, 50, 0, "", 12);
 		bpmTxt.scrollFactor.set();
 		add(bpmTxt);
+
+		add(UI_box);
 
 		addSongUI();
 		addEditorUI();
