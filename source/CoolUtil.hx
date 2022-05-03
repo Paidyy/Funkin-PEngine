@@ -40,6 +40,9 @@ class CoolUtil {
 		return null;
 	}
 
+	/**
+	 * WARNING: GETS THE SYS PATH, NOT OPENFL PATH
+	 */
 	public static function getCharacterPath(characterName:String) {
 		if (!characterName.endsWith("-custom")) {
 			if (FileSystem.exists("mods/characters/" + characterName + "/")) {
@@ -253,7 +256,7 @@ class CoolUtil {
 		return str;
 	}
 
-	public static function readYAML(path:String) {
+	public static function readYAML(path:String):Dynamic {
 		#if sys
 		return Yaml.read(path);
 		#else
