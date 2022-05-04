@@ -61,6 +61,7 @@ class TitleState extends MusicBeatState {
 			polymod.Polymod.init({modRoot: "mods", dirs: ['introMod'], framework: OPENFL});
 			#end
 		 */
+		FlxG.fixedTimestep = false; // should fix transitions being dependant on FPS
 
 		PlayerSettings.init();
 
