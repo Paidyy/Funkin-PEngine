@@ -847,12 +847,14 @@ class PlayState extends MusicBeatState {
 
 		startDiscordRPCTimer();
 
+		#if windows
 		if (FileSystem.exists(Paths.getLuaPath(curSong.toLowerCase()))) {
 			lua = new LuaShit(Paths.getLuaPath(curSong.toLowerCase()));
 			
 			luaSetVariable("curDifficulty", storyDifficulty);
 			luaSetVariable("stageZoom", this.stage.camZoom);
 		}
+		#end
 
 		super.create();
 
@@ -2608,9 +2610,11 @@ class PlayState extends MusicBeatState {
 	}
 
 	function luaClose() {
+		#if windows
 		if (lua != null) {
 			lua.close();
 		}
+		#end
 	}
 
 	function endSong():Void {
@@ -4230,14 +4234,18 @@ class PlayState extends MusicBeatState {
 		}
 	}
 
-	function luaCall(func, ?args) {
+	function luaCall(func, ?args:Array<Dynamic>) {
+		#if windows
 		if (lua != null)
 			lua.call(func, args);
+		#end
 	}
 
 	function luaSetVariable(name:String, value:Dynamic) {
+		#if windows
 		if (lua != null)
 			lua.setVariable(name, value);
+		#end
 	}
 
 	var lightningStrikeBeat:Int = 0;
@@ -4331,7 +4339,11 @@ class PlayState extends MusicBeatState {
 
 	var timeLeftText:FlxText;
 
+	#if windows
 	var lua:LuaShit;
+	#else
+	var lua(null, null):Dynamic = null;
+	#end
 
 	public static var week:Week;
 
