@@ -1,7 +1,7 @@
 package;
 
 import Sys.sleep;
-#if cpp
+#if windows
 import discord_rpc.DiscordRpc;
 #end
 
@@ -14,7 +14,7 @@ class DiscordClient {
 
 	public function new() {
 		if (Options.discordRPC == true) {
-			#if cpp
+			#if windows
 			trace("Discord Client starting...");
 			DiscordRpc.start({
 				clientID: "814588678700924999",
@@ -39,13 +39,13 @@ class DiscordClient {
 	public static function shutdown() {
 		//trace("Discord Client Shutted Down");
 		isRunning = false;
-		#if cpp
+		#if windows
 		DiscordRpc.shutdown();
 		#end
 	}
 
 	static function onReady() {
-		#if cpp
+		#if windows
 		DiscordRpc.presence({
 			details: "In the Menus",
 			state: null,
@@ -65,7 +65,7 @@ class DiscordClient {
 	}
 
 	public static function initialize() {
-		#if cpp
+		#if windows
 		var DiscordDaemon = sys.thread.Thread.create(() -> {
 			new DiscordClient();
 		});
@@ -82,7 +82,7 @@ class DiscordClient {
 			if (!isRunning) {
 				startPresence();
 			}
-			#if cpp
+			#if windows
 			var startTimestamp:Float = if (hasStartTimestamp) Date.now().getTime() else 0;
 
 			if (endTimestamp > 0) {
@@ -103,7 +103,7 @@ class DiscordClient {
 			// trace('Discord RPC Updated. Arguments: $details, $state, $smallImageKey, $hasStartTimestamp, $endTimestamp');
 			#end
 		} else {
-			#if cpp
+			#if windows
 			shutdown();
 			#end
 		}
