@@ -1,5 +1,6 @@
 package;
 
+import Song.SwagGlobalNotes;
 import flixel.tweens.FlxTween;
 import flixel.tweens.motion.QuadMotion;
 import flixel.tweens.misc.AngleTween;
@@ -59,6 +60,8 @@ class PlayState extends MusicBeatState {
 	public static var dataFileDifficulty:String;
 	public static var playAs:String = null;
 	public static var whichCharacterToBotFC:String = "";
+
+	public static var SONGglobalNotes:SwagGlobalNotes;
 
 	private var vocals:FlxSound;
 
@@ -318,6 +321,8 @@ class PlayState extends MusicBeatState {
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial');
 
+		SONGglobalNotes = Song.parseGlobalNotesJSONshit(SONG.song);
+
 		Conductor.mapBPMChanges(SONG);
 		Conductor.changeBPM(SONG.bpm);
 
@@ -341,8 +346,8 @@ class PlayState extends MusicBeatState {
 			}
 		}
 
-		if (FileSystem.exists("mods/songs/" + SONG.song.toLowerCase() + "/dialogue.txt")) {
-			dialogue = CoolUtil.coolTextFile("mods/songs/" + SONG.song.toLowerCase() + "/dialogue.txt");
+		if (FileSystem.exists(${Paths.modsLoc} + "/songs/" + SONG.song.toLowerCase() + "/dialogue.txt")) {
+			dialogue = CoolUtil.coolTextFile(${Paths.modsLoc} + "/songs/" + SONG.song.toLowerCase() + "/dialogue.txt");
 		}
 		else if (FileSystem.exists("assets/data/" + SONG.song.toLowerCase() + "/dialogue.txt")) {
 			dialogue = CoolUtil.coolTextFile(Paths.txt(SONG.song.toLowerCase() + '/dialogue'));
@@ -428,12 +433,11 @@ class PlayState extends MusicBeatState {
 		try {
 			stage = new Stage(tempStageName);
 			add(stage);
+			stage.applyStageShitToPlayState();
 		} catch (exc) {
 			trace("Failed to load stage:" + tempStageName);
 			new Notification("Failed to load stage:" + tempStageName).show();
 		}
-
-		stage.applyStageShitToPlayState();
 
 		gfVersion = 'gf';
 
@@ -825,8 +829,8 @@ class PlayState extends MusicBeatState {
 					camFollow.setPosition(dad.getMidpoint().x + 120, dad.getMidpoint().y - 70);
 					playCutscene("stressCutscene");
 				default:
-					if (FileSystem.exists(Paths.getSongFolder(SONG.song) + "cutscene.mp4")) {
-						playCutscene(Paths.getSongFolder(SONG.song) + "cutscene.mp4");
+					if (FileSystem.exists(Paths.getSongPath(SONG.song) + "cutscene.mp4")) {
+						playCutscene(Paths.getSongPath(SONG.song) + "cutscene.mp4");
 					}
 					else {
 						if (dialogue != null) {
@@ -1251,10 +1255,6 @@ class PlayState extends MusicBeatState {
 		// NEW SHIT
 		noteData = songData.notes;
 
-		var playerCounter:Int = 0;
-
-		var daBeats:Int = 0; // Not exactly representative of 'daBeats' lol, just how much it has looped
-
 		accuracy = new Accuracy();
 		
 		for (section in noteData) {
@@ -1341,7 +1341,95 @@ class PlayState extends MusicBeatState {
 				}
 
 			}
-			daBeats += 1;
+		}
+
+		if (SONGglobalNotes != null) {
+			for (section in SONGglobalNotes.notes) {
+				// var coolSection:Int = Std.int(section.lengthInSteps / 4);
+
+				for (songNotes in section.sectionNotes) {
+					var daNoteData:Int = Std.int(songNotes[1] % SONG.whichK);
+					var daStrumTime:Float = songNotes[0];
+
+					var gottaHitNote:Bool = section.mustHitSection;
+
+					if (songNotes[1] >= SONG.whichK) {
+						gottaHitNote = !section.mustHitSection;
+					}
+
+					var oldNote:Note;
+					if (unspawnNotes.length > 0)
+						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+					else
+						oldNote = null;
+
+					var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, songNotes[3], songNotes[4]);
+
+					swagNote.sustainLength = songNotes[2];
+					swagNote.scrollFactor.set(0, 0);
+
+					var susLength:Float = swagNote.sustainLength;
+
+					susLength = susLength / Conductor.stepCrochet;
+					unspawnNotes.push(swagNote);
+
+					for (susNote in 0...Math.floor(susLength)) {
+						oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+
+						var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true);
+						sustainNote.scrollFactor.set();
+						unspawnNotes.push(sustainNote);
+
+						sustainNote.mustPress = gottaHitNote;
+
+						if (sustainNote.mustPress)
+							sustainNote.x += FlxG.width / 2; // general offset
+
+						if (sustainNote.isGoodNote) {
+							if (sustainNote.mustPress) {
+								if (playAs == "bf") {
+									accuracy.addNote();
+								}
+							}
+							else if (!sustainNote.mustPress && playAs == "dad") {
+								accuracy.addNote();
+							}
+						}
+
+						if (sustainNote.strumTime < songPositionCustom) {
+							sustainNote.canBeMissed = true;
+						}
+					}
+
+					swagNote.mustPress = gottaHitNote;
+
+					if (swagNote.action.toLowerCase() == "change character") {
+						var splicedValue = swagNote.actionValue.split(", ");
+						Cache.cacheCharacter(splicedValue[0], splicedValue[1], true);
+					}
+					if (swagNote.action.toLowerCase() == "change stage") {
+						Cache.cacheStage(swagNote.actionValue);
+					}
+
+					if (swagNote.mustPress)
+						swagNote.x += FlxG.width / 2; // general offset
+
+					if (swagNote.isGoodNote) {
+						if (swagNote.mustPress) {
+							if (playAs == "bf") {
+								accuracy.addNote();
+							}
+						}
+						else if (!swagNote.mustPress && playAs == "dad") {
+							accuracy.addNote();
+						}
+					}
+
+					if (swagNote.strumTime < songPositionCustom) {
+						swagNote.canBeMissed = true;
+					}
+				}
+			}
 		}
 
 		// trace(unspawnNotes.length);
@@ -1825,7 +1913,7 @@ class PlayState extends MusicBeatState {
 					startTimer.active = true;
 				setPaused(false);
 
-				#if cpp
+				#if windows
 				if (startTimer.finished) {
 					DiscordClient.changePresence(detailsText
 						+ " "
@@ -1851,7 +1939,7 @@ class PlayState extends MusicBeatState {
 	}
 
 	override public function onFocus():Void {
-		#if cpp
+		#if windows
 		if (health > 0 && !paused) {
 			if (Conductor.songPosition > 0.0) {
 				DiscordClient.changePresence(detailsText
@@ -3869,7 +3957,7 @@ class PlayState extends MusicBeatState {
 
 	function startDiscordRPCTimer() {
 		new FlxTimer().start(5, function(timer:FlxTimer) {
-			#if cpp
+			#if windows
 			if (health > 0 && !paused) {
 				DiscordClient.changePresence(
 					detailsText + " " + SONG.song + " (" + storyDifficultyText + ")", 
