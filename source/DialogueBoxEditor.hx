@@ -1,5 +1,9 @@
 package;
 
+import flixel.input.FlxInput;
+import flixel.input.keyboard.FlxKey;
+import Alphabet.AlphaCharacter;
+import flixel.ui.FlxButton;
 import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
 import sys.FileSystem;
@@ -19,13 +23,13 @@ class DBox extends DialogueBoxOg {
     public function new(Text:String) {
         super(null, false);
 
-        var splittedDialogue = CoolUtil.splitDialogue("test");
+        var splittedDialogue = ["coolSwag"];
 
         dialogues = new Array<Alphabet>();
 
         var index = 0;
         for (dialogue in splittedDialogue) {
-            dialogues[index] = new Alphabet(box.x + 40, box.y + 80, Text, false, false, 0.7);
+            dialogues[index] = new Alphabet(box.x + 40, box.y + 90, Text, false, false, 0.7);
             add(dialogues[0]);
             index++;
         }
@@ -34,7 +38,6 @@ class DBox extends DialogueBoxOg {
 
 class DialogueBoxEditor extends FlxState {
     public var dBox:DBox;
-    var letters = "abcdefghijklmnopqrstuvwxyz";
 
     private var texts:Array<String> = ["coolswag"];
     public var curIndex:Int = -1;
@@ -48,7 +51,7 @@ class DialogueBoxEditor extends FlxState {
         super();
 
         if (PlayState.SONG != null) {
-            dialoguePath = CoolUtil.getSongPath(PlayState.SONG.song, true) + "dialogue.txt";
+            dialoguePath = Paths.getSongPath(PlayState.SONG.song, true) + "dialogue.txt";
 
             if (FileSystem.exists(dialoguePath)) {
                 var fileContent = File.getContent(dialoguePath);
@@ -98,7 +101,7 @@ class DialogueBoxEditor extends FlxState {
         "CTRL + ENTER - Reposition Text\n" +
         "CTRL + S - Save the dialogue\n" +
         "CTRL + F - Flip the box\n" +
-        "CTRL + ARROWS - Change the 'dialogues\n'"
+        "CTRL + ARROWS - Change the dialogues\n'"
         ;
 		// flx text is bugged with \n
 		info.scrollFactor.set();
@@ -108,6 +111,7 @@ class DialogueBoxEditor extends FlxState {
     }
 
     function updateGUI() {
+		deleteDialogue.visible = (curIndex == texts.length - 1 && texts.length > 1);
         if (arrayProperties()[2] == null) {
             changePropertiesValue(2, "normal");
         }
@@ -124,9 +128,18 @@ class DialogueBoxEditor extends FlxState {
         dBox.box.flipX = !dBox.talkingRight;
     }
 
+    var backspaceTime = 0;
+
     override function update(elapsed) {
         //hasFocus is updated here
         super.update(elapsed);
+
+		backspaceTime = (FlxG.keys.pressed.BACKSPACE ? backspaceTime + 1 : 0);
+
+		if (backspaceTime >= 100 && backspaceTime % 5 == 0) {
+			texts[curIndex] = texts[curIndex].substring(0, texts[curIndex].length - 1);
+			dBox.dialogues[0].remFromText();
+        }
 
         FlxG.mouse.visible = true;
 
@@ -147,6 +160,7 @@ class DialogueBoxEditor extends FlxState {
                         textsProperties[curIndex] = "dad,false,normal";
                         trace("creating dialogue at " + curIndex);
                     }
+					trace(texts[curIndex]);
                     dBox.dialogues[0].text = texts[curIndex];
                     updateGUI();
                     updateShit();
@@ -175,15 +189,79 @@ class DialogueBoxEditor extends FlxState {
             }
             else {
                 if (FlxG.keys.justPressed.ANY) {
-                    if (letters.indexOf(FlxG.keys.getIsDown()[0].ID.toString().toLowerCase()) != -1) {
-                        if (FlxG.keys.pressed.SHIFT) {
-                            texts[curIndex] += FlxG.keys.getIsDown()[0].ID.toString().toUpperCase();
-                            dBox.dialogues[0].text += FlxG.keys.getIsDown()[0].ID.toString().toUpperCase();
+                    var char = null;
+
+                    var isDownArray = FlxG.keys.getIsDown();
+                    for (key in isDownArray) {
+                        if (key.ID.toString() == "SHIFT") {
+							isDownArray.remove(key);
                         }
-                        else {
-                            texts[curIndex] += FlxG.keys.getIsDown()[0].ID.toString().toLowerCase();
-                            dBox.dialogues[0].text += FlxG.keys.getIsDown()[0].ID.toString().toLowerCase();
-                        }
+                    }
+
+					if (isDownArray.length > 0) {
+						if (AlphaCharacter.alphabet.indexOf(isDownArray[0].ID.toString().toLowerCase()) != -1) {
+							if (FlxG.keys.pressed.SHIFT) {
+								char = isDownArray[0].ID.toString().toUpperCase();
+							}
+							else {
+								char = isDownArray[0].ID.toString().toLowerCase();
+							}
+						}
+						switch (isDownArray[0].ID.toString()) {
+							case "ONE":
+								char = !FlxG.keys.pressed.SHIFT ? "1" : "!";
+							case "TWO":
+								char = !FlxG.keys.pressed.SHIFT ? "2" : "@";
+							case "THREE":
+								char = !FlxG.keys.pressed.SHIFT ? "3" : "#";
+							case "FOUR":
+								char = !FlxG.keys.pressed.SHIFT ? "4" : "$";
+							case "FIVE":
+								char = !FlxG.keys.pressed.SHIFT ? "5" : "%";
+							case "SIX":
+								char = !FlxG.keys.pressed.SHIFT ? "6" : "^";
+							case "SEVEN":
+								if (!FlxG.keys.pressed.SHIFT)
+									char = "7";
+							case "EIGHT":
+								char = !FlxG.keys.pressed.SHIFT ? "8" : "*";
+							case "NINE":
+								char = !FlxG.keys.pressed.SHIFT ? "9" : "(";
+							case "ZERO":
+								char = !FlxG.keys.pressed.SHIFT ? "0" : ")";
+							case "BACKSLASH":
+								if (FlxG.keys.pressed.SHIFT)
+									char = "|";
+							case "GRAVEACCENT":
+								if (FlxG.keys.pressed.SHIFT)
+									char = "~";
+                            case "PLUS":
+								char = !FlxG.keys.pressed.SHIFT ? "=" : "+";
+							case "MINUS":
+								char = !FlxG.keys.pressed.SHIFT ? "-" : "_";
+							case "SEMICOLON":
+								char = !FlxG.keys.pressed.SHIFT ? ";" : ":";
+							case "COMMA":
+								char = !FlxG.keys.pressed.SHIFT ? "," : "<";
+							case "PERIOD":
+								char = !FlxG.keys.pressed.SHIFT ? "." : ">";
+							case "LBRACKET":
+								if (!FlxG.keys.pressed.SHIFT)
+									char = "[";
+							case "RBRACKET":
+								if (!FlxG.keys.pressed.SHIFT)
+									char = "]";
+							case "QUOTE":
+								if (!FlxG.keys.pressed.SHIFT)
+									char = "'";
+                            case "SLASH":
+								if (FlxG.keys.pressed.SHIFT)
+									char = "?";
+						}
+						if (char != null) {
+							texts[curIndex] += char;
+							dBox.dialogues[0].text += char;
+						}
                     }
                 }
     
@@ -260,10 +338,20 @@ class DialogueBoxEditor extends FlxState {
         dialogStyle.selectedLabel = arrayProperties()[2];
 		var text2 = new FlxText(dialogStyle.x, dialogStyle.y - 15, 0, "Box Style:");
 
+		deleteDialogue = new FlxButton(dialogStyle.x, dialogStyle.y + 60, "Delete Dialogue", () -> {
+			texts.pop();
+
+			curIndex--;
+			dBox.dialogues[0].text = texts[curIndex];
+			updateGUI();
+			updateShit();
+        });
+
         tab_group_note.add(inputChar);
         tab_group_note.add(text);
         tab_group_note.add(dialogStyle);
         tab_group_note.add(text2);
+		tab_group_note.add(deleteDialogue);
 
 		uiBox.addGroup(tab_group_note);
 	}
@@ -273,4 +361,6 @@ class DialogueBoxEditor extends FlxState {
 	var uiBox:FlxUITabMenu;
 
 	var dialogStyle:UIDropDownMenu;
+
+	var deleteDialogue:FlxButton;
 }
