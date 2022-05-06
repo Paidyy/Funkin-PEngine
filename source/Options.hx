@@ -1,5 +1,14 @@
 package;
 
+import AltSharedObject.AltSave;
+import haxe.io.Path;
+import openfl.errors.Error;
+import haxe.Unserializer;
+import sys.io.File;
+import sys.FileSystem;
+import lime.app.Application;
+import openfl.net.SharedObject;
+import lime.system.System;
 import openfl.display.StageQuality;
 import sys.ssl.Key;
 import flixel.input.keyboard.FlxKey;
@@ -31,17 +40,19 @@ class Options {
 	public static var disableSpamChecker:Bool = false;
 	public static var freeplayListenVocals:Bool = false;
 	
-	private static var _optionsSave:FlxSave;
-	private static var _controlsSave:FlxSave;
+	private static var _optionsSave:AltSave;
+	private static var _controlsSave:AltSave;
 
 	public static function startupSaveScript() {
-		_controlsSave = new FlxSave();
-		_controlsSave.bind("controls");
+		_controlsSave = new AltSave();
+		_controlsSave.bind("controls", Main.ENGINE_NAME);
 		saveKeyBinds();
 
-		_optionsSave = new FlxSave();
-		_optionsSave.bind("options");
+		_optionsSave = new AltSave();
+		_optionsSave.bind("options", Main.ENGINE_NAME);
 		saveAndLoadAll();
+
+		
 		#if debug
 		trace("Options Data: " + _optionsSave.data);
 		#end

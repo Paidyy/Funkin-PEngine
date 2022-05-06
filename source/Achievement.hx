@@ -1,15 +1,15 @@
 package;
 
+import AltSharedObject.AltSave;
 import Main.AchievementNotification;
 import yaml.util.ObjectMap.AnyObjectMap;
 import openfl.display.BitmapData;
 import yaml.Yaml;
 import sys.FileSystem;
-import flixel.util.FlxSave;
 import flixel.FlxG;
 
 class Achievement {
-	private static var _achievementSave:FlxSave;
+	private static var _achievementSave:AltSave;
     
 	public static function unlock(id:String) {
 		if (!isUnlocked(id)) {
@@ -38,9 +38,9 @@ class Achievement {
                 }
             }
         }
-		if (FileSystem.exists("mods/achievements")) {
-			for (folder in FileSystem.readDirectory("mods/achievements")) {
-				var path = "mods/achievements/" + folder + "/";
+		if (FileSystem.exists('${Paths.modsLoc}/achievements')) {
+			for (folder in FileSystem.readDirectory('${Paths.modsLoc}/achievements')) {
+				var path = '${Paths.modsLoc}/achievements/' + folder + "/";
 				if (FileSystem.isDirectory(path)) {
 					var config = Yaml.read(path + "config.yml");
 					arra.push(new AchievementObject(folder, config, path + "icon.png"));
@@ -51,8 +51,8 @@ class Achievement {
     }
 
 	public static function init() {
-		_achievementSave = new FlxSave();
-		_achievementSave.bind("achievements");
+		_achievementSave = new AltSave();
+		_achievementSave.bind("achievements", Main.ENGINE_NAME);
         _achievementSave.data._ = true;
 		_achievementSave.flush();
 	}
@@ -95,8 +95,8 @@ class AchievementObject {
 				return new AchievementObject(id, config, path + "icon.png");
             }
 		}
-		if (FileSystem.exists("mods/achievements/" + id)) {
-			var path = "mods/achievements/" + id + "/";
+		if (FileSystem.exists(${Paths.modsLoc} + "/achievements/" + id)) {
+			var path = ${Paths.modsLoc} + "/achievements/" + id + "/";
             if (FileSystem.isDirectory(path)) {
                 var config = Yaml.read(path + "config.yml");
 				return new AchievementObject(id, config, path + "icon.png");
