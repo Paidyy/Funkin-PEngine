@@ -56,7 +56,7 @@ class DialogueBoxOg extends FlxSpriteGroup {
 
 			this.dialogueList = dialogueList;
 	
-			dialogue = new Alphabet(box.x + 40, box.y + 80, "", false, true, 0.7);
+			dialogue = new Alphabet(box.x + 40, box.y + 90, "", false, true, 0.7);
 			// dialogue.x = 90;
 			// add(dialogue);
 	
@@ -146,6 +146,9 @@ class DialogueBoxOg extends FlxSpriteGroup {
 				}
 			}
 			else {
+				if (theDialog.typedTimer != null) {
+					theDialog.typedTimer.cancel();
+				}
 				dialogueList.remove(dialogueList[0]);
 				startDialogue();
 			}
@@ -162,7 +165,7 @@ class DialogueBoxOg extends FlxSpriteGroup {
 		if (theDialog != null)
 			remove(theDialog);
 
-		theDialog = new Alphabet(box.x, box.y + 80, dialogueList[0], false, true, 0.7);
+		theDialog = new Alphabet(box.x + 40, box.y + 90, dialogueList[0], false, true, 0.7);
 		add(theDialog);
 
 		if (!talkingRight) {
