@@ -44,14 +44,14 @@ class Cache {
 
     public static function cacheCharacterConfig(daChar) {
 		if (!Cache.charactersConfigs.exists(daChar)) {
-            if (FileSystem.exists(CoolUtil.getCharacterPath(daChar) + "config.yml")) {
-                Cache.charactersConfigs.set(daChar, CoolUtil.readYAML(CoolUtil.getCharacterPath(daChar) + "config.yml"));
+            if (FileSystem.exists(Paths.getCharacterPath(daChar) + "config.yml")) {
+                Cache.charactersConfigs.set(daChar, CoolUtil.readYAML(Paths.getCharacterPath(daChar) + "config.yml"));
             }
         }
     }
 
     public static function cacheCharacterAssets(daChar, ?forceCache:Bool = false) {
-		var path = CoolUtil.getCharacterPath(daChar) + daChar;
+		var path = Paths.getCharacterPath(daChar) + daChar;
 		if (!Cache.charactersAssets.exists(daChar) || forceCache) {
             trace("caching character: " + path + "...");
             if (FileSystem.exists(path + ".txt")) {

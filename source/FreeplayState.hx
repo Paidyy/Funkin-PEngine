@@ -114,7 +114,7 @@ class FreeplayState extends MusicBeatState {
 
 		
 
-		var pengine_weeks_path = "mods/weeks/";
+		var pengine_weeks_path = ${Paths.modsLoc} + "/weeks/";
 		weekModsFolderContent = FileSystem.readDirectory(pengine_weeks_path);
 		for (file in weekModsFolderContent) {
 			if (file.endsWith("-erect"))
@@ -138,7 +138,7 @@ class FreeplayState extends MusicBeatState {
 			}
 		}
 
-		var pengine_song_path = "mods/songs/";
+		var pengine_song_path = ${Paths.modsLoc} + "/songs/";
 		songModsFolderContent = FileSystem.readDirectory(pengine_song_path);
 		for (file in songModsFolderContent) {
 			if (file.endsWith("-erect"))
@@ -184,7 +184,7 @@ class FreeplayState extends MusicBeatState {
 			var iconChar = songs[i].songCharacter;
 
 			if (iconChar == "face") {
-				var json:SwagSong = CoolUtil.getSongJson(songs[i].songName);
+				var json:SwagSong = Paths.getSongJson(songs[i].songName);
 				if (json != null) {
 					iconChar = json.player2;
 				}
@@ -275,7 +275,7 @@ class FreeplayState extends MusicBeatState {
 	override public function onFocus() {
 		super.onFocus();
 		
-		if (songModsFolderContent.length != FileSystem.readDirectory("mods/songs/").length) {
+		if (songModsFolderContent.length != FileSystem.readDirectory(${Paths.modsLoc} + "/songs/").length) {
 			FlxG.switchState(new FreeplayState());
 		}
 	}
@@ -345,6 +345,7 @@ class FreeplayState extends MusicBeatState {
 
 
 		if (FlxG.keys.justPressed.E && erectSongExists) {
+			vocals.stop();
 			FlxG.switchState(new FreeplayState(!erectMode));
 		}
 

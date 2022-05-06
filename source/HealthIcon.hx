@@ -52,7 +52,7 @@ class HealthIcon extends FlxSprite {
 			case "pico-speaker": curChar = "pico";
 			default:
 				curChar = char;
-				if (FileSystem.exists("mods/characters/" + curChar + "/icon.png")) {
+				if (FileSystem.exists(${Paths.modsLoc} + "/characters/" + curChar + "/icon.png")) {
 					type = "mods";
 				}
 		}

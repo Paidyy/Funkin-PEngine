@@ -39,8 +39,8 @@ class Character extends AnimatedSprite {
 
 		if (Paths.isCustomPath(Paths.file('images/${"characters/" + curCharacter + "/" + curCharacter}.xml'))) {
 			trace("custom character: " + curCharacter);
-			var path = CoolUtil.getCharacterPath(curCharacter) + curCharacter;
-			if (path.startsWith("mods/skins/")) {
+			var path = Paths.getCharacterPath(curCharacter) + curCharacter;
+			if (path.startsWith(${Paths.modsLoc} + "/skins/")) {
 				var spltPath = path.split("/");
 				spltPath[spltPath.length - 1] = spltPath[spltPath.length - 2];
 				path = "";
@@ -64,7 +64,7 @@ class Character extends AnimatedSprite {
 
 		var idleAnim = "idle";
 
-		setConfigPath(CoolUtil.getCharacterPath(curCharacter) + 'config.yml');
+		setConfigPath(Paths.getCharacterPath(curCharacter) + 'config.yml');
 
 		if (Cache.charactersConfigs.exists(curCharacter)) {
 			config = Cache.charactersConfigs.get(curCharacter);

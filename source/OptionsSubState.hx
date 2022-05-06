@@ -426,7 +426,7 @@ class OptionsCharacterSubState extends FlxSubState {
 
         this.inGame = inGame;
         this.character = character;
-        character_path = "mods/skins/" + character + "/";
+		character_path = ${Paths.modsLoc} + "/skins/" + character + "/";
         character_list = new Array<String>();
 
         character_list.push("Vanilla");

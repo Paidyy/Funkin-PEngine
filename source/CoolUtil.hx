@@ -20,71 +20,6 @@ import openfl.utils.Assets as OpenFlAssets;
 class CoolUtil {
 	public static var difficultyArray:Array<String> = ['EASY', "NORMAL", "HARD"];
 
-	public static function getSongPath(songName:String, ?dataFolder = false) {
-		if (FileSystem.exists("mods/songs/" + songName.toLowerCase() + "/")) {
-			return "mods/songs/" + songName.toLowerCase() + "/";
-		}
-		else if (FileSystem.exists("assets/" + (dataFolder ? 'data' : 'songs') + "/" + songName.toLowerCase() + "/")) {
-			return "assets/" + (dataFolder ? 'data' : 'songs') + "/" + songName.toLowerCase() + "/";
-		}
-		return null;
-	}
-
-	public static function getStagePath(stageName:String) {
-		if (FileSystem.exists("mods/stages/" + stageName.toLowerCase() + "/")) {
-			return "mods/stages/" + stageName.toLowerCase() + "/";
-		} 
-		else if (FileSystem.exists("assets/stages/" + stageName.toLowerCase() + "/")) {
-			return "assets/stages/" + stageName.toLowerCase() + "/";
-		}
-		return null;
-	}
-
-	/**
-	 * WARNING: GETS THE SYS PATH, NOT OPENFL PATH
-	 */
-	public static function getCharacterPath(characterName:String) {
-		if (!characterName.endsWith("-custom")) {
-			if (FileSystem.exists("mods/characters/" + characterName + "/")) {
-				return "mods/characters/" + characterName + "/";
-			}
-			else if (FileSystem.exists("assets/shared/images/characters/" + characterName + "/")) {
-				return "assets/shared/images/characters/" + characterName + "/";
-			}
-		}
-		else {
-			switch (characterName) {
-				case 'bf-custom':
-					return Options.customBfPath;
-				case 'gf-custom':
-					return Options.customGfPath;
-				case 'dad-custom':
-					return Options.customDadPath;
-			}
-		}
-		return null;
-	}
-
-	public static function getSongJson(songName:String, ?difficulty:Int):SwagSong {
-		var dataFileDifficulty:String = "";
-		switch (difficulty) {
-			case 0:
-				dataFileDifficulty = '-easy';
-			case 1:
-				dataFileDifficulty = "";
-			case 2:
-				dataFileDifficulty = '-hard';
-		}
-
-		var json:SwagSong;
-		if (FileSystem.exists(Paths.instNoLib(songName.toLowerCase()))) {
-			json = Song.loadFromJson(songName.toLowerCase() + dataFileDifficulty, songName.toLowerCase());
-		} else {
-			json = Song.PEloadFromJson(songName.toLowerCase() + dataFileDifficulty, songName.toLowerCase());
-		}
-		return json;
-	}
-
 	/**
 	 * Writes to file, if the file doesnt exist it creates one
 	 * @param path the path
@@ -245,17 +180,6 @@ class CoolUtil {
 		return daList;
 	}
 
-	public static function splitDialogue(s:String) {
-		var str = s.split('\n');
-
-		for (i in 0...str.length) {
-			str[i] = str[i].trim();
-			str[i] = str[i].replace('\\n', '\n');
-		}
-
-		return str;
-	}
-
 	public static function readYAML(path:String):Dynamic {
 		#if sys
 		return Yaml.read(path);
@@ -264,9 +188,21 @@ class CoolUtil {
 		#end
 	}
 
+	@:access(lime._internal.backend.native.NativeCFFI)
+	public static function getAppData() {
+		var path = "";
+		#if hl
+		path = @:privateAccess String.fromUTF8(lime._internal.backend.native.NativeCFFI.lime_system_get_directory(1, "", ""));
+		#else
+		path = lime._internal.backend.native.NativeCFFI.lime_system_get_directory(1, "", "");
+		#end
+		path = StringTools.replace(path, "//", "/");
+		return path;
+	}
+
 	public static function getStages():Array<String> {
 		var stages = Stage.stagesList;
-		var mods_characters_path = "mods/stages/";
+		var mods_characters_path = '${Paths.modsLoc}/stages/';
 		for (stage in FileSystem.readDirectory(mods_characters_path)) {
 			var path = Path.join([mods_characters_path, stage]);
 			if (FileSystem.isDirectory(path)) {
@@ -285,7 +221,7 @@ class CoolUtil {
 				list.push(file);
 			}
 		}
-		var mods_characters_path = "mods/characters/";
+		var mods_characters_path = '${Paths.modsLoc}/characters/';
 		for (char in FileSystem.readDirectory(mods_characters_path)) {
 			var path = Path.join([mods_characters_path, char]);
 			if (FileSystem.isDirectory(path)) {
@@ -304,7 +240,7 @@ class CoolUtil {
 				list.push(file);
 			}
 		}
-		var pengine_song_path = "mods/songs/";
+		var pengine_song_path = '${Paths.modsLoc}/songs/';
 		for (file in FileSystem.readDirectory(pengine_song_path)) {
 			var path = haxe.io.Path.join([pengine_song_path, file]);
 			if (FileSystem.isDirectory(path)) {

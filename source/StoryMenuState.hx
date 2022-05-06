@@ -124,7 +124,7 @@ class StoryMenuState extends MusicBeatState {
 		weeks.push(new Week('week6', ['Senpai', 'Roses', 'Thorns'], ['senpai', 'bf', 'gf'], "hating simulator ft. moawling", new UnlockedAfterMap("week5")));
 		//weeks.push(new Week('week7', ['Ugh', 'Guns', 'Stress'], ['tankman', 'bf', 'gf'], "Tankman", new UnlockedAfterMap("week6")));
 
-		var pengine_weeks_path = "mods/weeks/";
+		var pengine_weeks_path = ${Paths.modsLoc} + "/weeks/";
 		for (file in FileSystem.readDirectory(pengine_weeks_path)) {
 			var path = haxe.io.Path.join([pengine_weeks_path, file]);
 			if (FileSystem.isDirectory(path)) {

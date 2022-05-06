@@ -188,21 +188,21 @@ class LuaShit {
         });
 
         Lua_helper.add_callback(lua, "cacheSound", function(path:String) {
-            Cache.cacheSound("mods/" + path);
+			Cache.cacheSound(${Paths.modsLoc} + "/" + path);
         });
 
         Lua_helper.add_callback(lua, "playSound", function(path:String) {
-            if (Cache.sounds.exists("mods/" + path)) {
-                FlxG.sound.play(Cache.sounds.get("mods/" + path));
+			if (Cache.sounds.exists(${Paths.modsLoc} + "/" + path)) {
+				FlxG.sound.play(Cache.sounds.get(${Paths.modsLoc} + "/" + path));
             }
             else {
-                FlxG.sound.play(Sound.fromFile("mods/" + path));
+				FlxG.sound.play(Sound.fromFile(${Paths.modsLoc} + "/" + path));
             }
         });
 
         Lua_helper.add_callback(lua, "addSprite", function(name:String, path:String, x:Float, y:Float) {
             var sprite:FlxSprite = new FlxSprite(x,y);
-			var actualPath = "mods/" + path;
+			var actualPath = ${Paths.modsLoc} + "/" + path;
 			if (FileSystem.exists(actualPath.substring(0, actualPath.length - 3) + "xml")) {
 				sprite.frames = FlxAtlasFrames.fromSparrow(BitmapData.fromBytes(File.getBytes(actualPath)),
 					File.getContent(actualPath.substring(0, actualPath.length - 3) + "xml"));

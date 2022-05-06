@@ -100,7 +100,7 @@ class Stage extends FlxTypedGroup<Dynamic> {
 
         name = stage;
 
-        var prefixPath = FileSystem.exists('assets/stages/$stage/') ? 'assets/stages/$stage/' : 'mods/stages/$stage/';
+		var prefixPath = FileSystem.exists('assets/stages/$stage/') ? 'assets/stages/$stage/' : ${Paths.modsLoc} + '/stages/$stage/';
         setConfig(prefixPath + 'config.yml');
 
 		switch (stage) {
@@ -635,6 +635,7 @@ class Stage extends FlxTypedGroup<Dynamic> {
 		if (FileSystem.exists(configPath)) {
 			config = CoolUtil.readYAML(configPath);
 		}
+        trace(config);
 	}
 }
 

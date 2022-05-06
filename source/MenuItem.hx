@@ -20,8 +20,8 @@ class MenuItem extends FlxSpriteGroup {
 		if (FileSystem.exists('assets/images/storymenu/$weekID.png')) {
 			week = new FlxSprite().loadGraphic(Paths.image('storymenu/$weekID'));
 		}
-		else if (FileSystem.exists('mods/weeks/$weekID/$weekID.png')) {
-			week = new FlxSprite().loadGraphic(BitmapData.fromBytes(File.getBytes('mods/weeks/$weekID/$weekID.png')));
+		else if (FileSystem.exists(${Paths.modsLoc} + '/weeks/$weekID/$weekID.png')) {
+			week = new FlxSprite().loadGraphic(BitmapData.fromBytes(File.getBytes(${Paths.modsLoc} + '/weeks/$weekID/$weekID.png')));
 		}
 		else {
 			week = new FlxSprite().makeGraphic(390, 90, FlxColor.WHITE);
