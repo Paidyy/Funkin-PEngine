@@ -1,5 +1,6 @@
 package;
 
+import sys.io.File;
 import sys.FileSystem;
 import Section.SwagSection;
 import haxe.Json;
@@ -8,8 +9,7 @@ import lime.utils.Assets;
 
 using StringTools;
 
-typedef SwagSong =
-{
+typedef SwagSong = {
 	var song:String;
 	var bpm:Int;
 	var needsVoices:Bool;
@@ -24,8 +24,11 @@ typedef SwagSong =
 	var notes:Array<SwagSection>;
 }
 
-class Song
-{
+typedef SwagGlobalNotes = {
+	var notes:Array<SwagSection>;
+}
+
+class Song {
 	public var song:String;
 	public var bpm:Int;
 	public var needsVoices:Bool = true;
@@ -38,8 +41,9 @@ class Song
 	public var swapBfGui:Bool = false;
 	public var notes:Array<SwagSection>;
 
-	public function new(song, notes, bpm, stage, ?whichK, ?playAs, ?swapBfGui)
-	{
+	public var globalNotes:Array<SwagSection>;
+
+	public function new(song, notes, bpm, stage, ?whichK, ?playAs, ?swapBfGui) {
 		this.song = song;
 		this.bpm = bpm;
 		this.stage = stage;
@@ -49,13 +53,11 @@ class Song
 		this.notes = notes;
 	}
 
-	public static function loadFromJson(jsonInput:String, ?folder:String):SwagSong
-	{
+	public static function loadFromJson(jsonInput:String, ?folder:String):SwagSong {
 		var rawJson = Assets.getText(Paths.json(folder.toLowerCase() + '/' + jsonInput.toLowerCase())).trim();
-		//trace("Chart Path: " + Paths.json(folder.toLowerCase() + '/' + jsonInput.toLowerCase()));
+		// trace("Chart Path: " + Paths.json(folder.toLowerCase() + '/' + jsonInput.toLowerCase()));
 
-		while (!rawJson.endsWith("}"))
-		{
+		while (!rawJson.endsWith("}")) {
 			rawJson = rawJson.substr(0, rawJson.length - 1);
 			// LOL GOING THROUGH THE BULLSHIT TO CLEAN IDK WHATS STRANGE
 		}
@@ -83,17 +85,19 @@ class Song
 		songName = songName.toLowerCase();
 		if (songNameNoDiff == null) {
 			songNameNoDiff = songName;
-		} else {
+		}
+		else {
 			songNameNoDiff = songNameNoDiff.toLowerCase();
 		}
-		//trace("Chart Path: " + 'mods/songs/' + songNameNoDiff + '/' + songName + ".json");
+		// trace("Chart Path: " + 'mods/songs/' + songNameNoDiff + '/' + songName + ".json");
 		var rawJson = "{}";
 		try {
-			if (FileSystem.exists("mods/songs/" + songNameNoDiff + "/" + songName + ".json")) {
+			if (FileSystem.exists(${Paths.modsLoc} + "/songs/" + songNameNoDiff + "/" + songName + ".json")) {
 				#if desktop
-				rawJson = sys.io.File.getContent("mods/songs/" + songNameNoDiff + "/" + songName + ".json");
+				rawJson = sys.io.File.getContent(${Paths.modsLoc} + "/songs/" + songNameNoDiff + "/" + songName + ".json");
 				#end
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -101,8 +105,7 @@ class Song
 			trace(error);
 		}
 
-		while (!rawJson.endsWith("}"))
-		{
+		while (!rawJson.endsWith("}")) {
 			rawJson = rawJson.substr(0, rawJson.length - 1);
 			// LOL GOING THROUGH THE BULLSHIT TO CLEAN IDK WHATS STRANGE
 		}
@@ -126,13 +129,27 @@ class Song
 		return parseJSONshit(rawJson);
 	}
 
-	public static function parseJSONshit(rawJson:String):SwagSong
-	{
+	public static function parseJSONshit(rawJson:String):SwagSong {
 		var swagShit:SwagSong = cast Json.parse(rawJson).song;
 		swagShit.validScore = true;
 		if (CoolUtil.isEmpty(swagShit.whichK)) {
 			swagShit.whichK = 4;
 		}
+		return swagShit;
+	}
+
+	public static function parseGlobalNotesJSONshit(song:String):SwagGlobalNotes {
+		var rawJson = null;
+		if (Assets.exists(Paths.json(song.toLowerCase() + "/global_notes.json"))) {
+			rawJson = Assets.getText(Paths.json(song.toLowerCase() + "/global_notes.json"));
+		}
+		else if (FileSystem.exists(Paths.getSongGlobalNotesPath(song.toLowerCase()))) {
+			rawJson = File.getContent(Paths.getSongGlobalNotesPath(song.toLowerCase()));
+		}
+		if (rawJson == null)
+			return null;
+		
+		var swagShit:SwagGlobalNotes = cast Json.parse(rawJson);
 		return swagShit;
 	}
 }
