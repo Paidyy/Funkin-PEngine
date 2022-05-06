@@ -1,4 +1,4 @@
 :dad,false,loud:HEY!
-:dad,false,normal:You think you can just sing with my daughter like that?
+:dad,false,normal:You think you can just sing with my\ndaughter like that?
 :dad,false,normal:If you want to date her...
-:dad,false,normal:You're going to have to go through ME first!
+:dad,false,normal:You're going to have to go through ME\\nfirst!
