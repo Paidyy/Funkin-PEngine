@@ -1,5 +1,6 @@
 package;
 
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.FlxSprite;
 import openfl.display.BitmapData;
@@ -18,6 +19,8 @@ class Cache {
 	public static var bfs:Map<String, Boyfriend> = new Map<String, Boyfriend>();
 	public static var charactersAssets:Map<String, CharacterCache> = new Map<String, CharacterCache>();
 	public static var charactersConfigs:Map<String, Dynamic> = new Map<String, Dynamic>();
+
+	public static var menuCharacters:Map<String, MenuCharacter> = new Map<String, MenuCharacter>();
 
     public static var stages:Map<String, Stage> = new Map<String, Stage>();
 

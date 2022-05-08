@@ -359,7 +359,7 @@ class StoryMenuState extends MusicBeatState {
 				FlxG.sound.play(Paths.sound('confirmMenu'));
 
 				grpWeekText.members[curWeek].startFlashing();
-				grpWeekCharacters.members[1].animation.play('bfConfirm');
+				grpWeekCharacters.members[1].animation.play('confirm');
 				stopspamming = true;
 			}
 			
@@ -461,46 +461,53 @@ class StoryMenuState extends MusicBeatState {
 	}
 
 	function updateText() {
-		if (grpWeekCharacters.members[0].animation.getByName(weeks[curWeek].characters[0]) != null) {
-			grpWeekCharacters.members[0].animation.play(weeks[curWeek].characters[0]);
-			grpWeekCharacters.members[1].animation.play(weeks[curWeek].characters[1]);
-			grpWeekCharacters.members[2].animation.play(weeks[curWeek].characters[2]);
-			
-			grpWeekCharacters.members[0].visible = true;
-		} else {
-			grpWeekCharacters.members[0].animation.play("dad");
-			grpWeekCharacters.members[1].animation.play("bf");
-			grpWeekCharacters.members[2].animation.play("gf");
-			trace("no story menu character image");
-
-			grpWeekCharacters.members[0].visible = false;
+		
+		for (i in 0...3) {
+			/*
+			if (Cache.menuCharacters.exists(weeks[curWeek].characters[i])) {
+				trace(weeks[curWeek].characters[i], Cache.menuCharacters.get(weeks[curWeek].characters[i]).character);
+				grpWeekCharacters.members[i] = Cache.menuCharacters.get(weeks[curWeek].characters[i]);
+			}
+			else
+			*/
+			if (FileSystem.exists(Paths.getCharacterPath(weeks[curWeek].characters[i]) + "story.png")) {
+				grpWeekCharacters.members[i].setChar(weeks[curWeek].characters[i]);
+			}
+			else {
+				//trace("no story menu character image: " + weeks[curWeek].characters[i]);
+				grpWeekCharacters.members[i].visible = true;
+			}
 		}
 		txtTracklist.text = "Tracks\n\n";
 
-		switch (grpWeekCharacters.members[0].animation.curAnim.name) {
+		switch (grpWeekCharacters.members[0].character) {
 			case 'parents-christmas':
-				grpWeekCharacters.members[0].offset.set(200, 200);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1.5));
+				grpWeekCharacters.members[0].offset.set(400, 220);
+				grpWeekCharacters.members[0].scale.set(0.45, 0.45);
 
 			case 'senpai':
-				grpWeekCharacters.members[0].offset.set(130, 0);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1.4));
+				grpWeekCharacters.members[0].offset.set(130, -50);
+				grpWeekCharacters.members[0].scale.set(0.8, 0.8);
 
 			case 'mom':
-				grpWeekCharacters.members[0].offset.set(100, 200);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1));
+				grpWeekCharacters.members[0].offset.set(100, 220);
+				grpWeekCharacters.members[0].scale.set(0.45, 0.45);
 
 			case 'dad':
-				grpWeekCharacters.members[0].offset.set(120, 200);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1));
+				grpWeekCharacters.members[0].offset.set(150, 200);
+				grpWeekCharacters.members[0].scale.set(0.5, 0.5);
 
-			case 'tankman':
-				grpWeekCharacters.members[0].offset.set(100, 0);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1));
+			case "spooky":
+				grpWeekCharacters.members[0].offset.set(200, 100);
+				grpWeekCharacters.members[0].scale.set(0.6, 0.6);
+
+			case "pico":
+				grpWeekCharacters.members[0].offset.set(150, 50);
+				grpWeekCharacters.members[0].scale.set(0.6, 0.6);
 
 			default:
 				grpWeekCharacters.members[0].offset.set(100, 100);
-				grpWeekCharacters.members[0].setGraphicSize(Std.int(grpWeekCharacters.members[0].width * 1));
+				grpWeekCharacters.members[0].scale.set(0.6, 0.6);
 				// grpWeekCharacters.members[0].updateHitbox();
 		}
 
