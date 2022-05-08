@@ -51,7 +51,12 @@ class Paths {
 		if (OpenFlAssets.exists(arg0)) {
 			return false;
 		}
-		return true;
+		if (arg0.startsWith(Paths.modsLoc)) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	static function getPath(file:String, type:AssetType, library:Null<String>) {
