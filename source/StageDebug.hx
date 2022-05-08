@@ -1,23 +1,23 @@
 package;
 
 import Main.Notification;
-import yaml.util.ObjectMap;
-import sys.io.File;
+import Stage.StageAsset;
+import flixel.FlxCamera;
+import flixel.FlxG;
+import flixel.FlxObject;
+import flixel.FlxSprite;
+import flixel.FlxState;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxGroup;
+import flixel.text.FlxText;
+import flixel.util.FlxCollision;
+import flixel.util.FlxColor;
+import openfl.media.Sound;
 import sys.FileSystem;
+import sys.io.File;
 import yaml.Yaml;
 import yaml.util.ObjectMap.AnyObjectMap;
-import flixel.group.FlxGroup;
-import flixel.FlxSprite;
-import flixel.FlxCamera;
-import openfl.media.Sound;
-import Stage.StageAsset;
-import flixel.util.FlxCollision;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.util.FlxColor;
-import flixel.text.FlxText;
-import flixel.FlxObject;
-import flixel.FlxG;
-import flixel.FlxState;
+import yaml.util.ObjectMap;
 
 class StageDebug extends MusicBeatState {
 
