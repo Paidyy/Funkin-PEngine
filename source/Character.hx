@@ -37,7 +37,7 @@ class Character extends AnimatedSprite {
 
 		antialiasing = true;
 
-		if (Paths.isCustomPath(Paths.file('images/${"characters/" + curCharacter + "/" + curCharacter}.xml'))) {
+		if (Paths.isCustomPath(Paths.getCharacterPath(curCharacter))) {
 			trace("custom character: " + curCharacter);
 			var path = Paths.getCharacterPath(curCharacter) + curCharacter;
 			if (path.startsWith(${Paths.modsLoc} + "/skins/")) {
