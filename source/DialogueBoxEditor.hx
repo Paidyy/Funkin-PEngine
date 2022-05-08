@@ -1,21 +1,21 @@
 package;
 
-import flixel.input.FlxInput;
-import flixel.input.keyboard.FlxKey;
 import Alphabet.AlphaCharacter;
-import flixel.ui.FlxButton;
+import OptionsSubState.Background;
+import clipboard.Clipboard;
+import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.FlxState;
 import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
+import flixel.group.FlxSpriteGroup;
+import flixel.input.FlxInput;
+import flixel.input.keyboard.FlxKey;
+import flixel.text.FlxText;
+import flixel.ui.FlxButton;
+import flixel.util.FlxColor;
 import sys.FileSystem;
 import sys.io.File;
-import clipboard.Clipboard;
-import flixel.text.FlxText;
-import flixel.group.FlxSpriteGroup;
-import flixel.FlxSprite;
-import flixel.util.FlxColor;
-import OptionsSubState.Background;
-import flixel.FlxG;
-import flixel.FlxState;
 
 class DBox extends DialogueBoxOg {
     public var dialogues:Array<Alphabet>;
@@ -82,15 +82,9 @@ class DialogueBoxEditor extends FlxState {
         dBox.scrollFactor.set();
         add(dBox);
 
-        var tabs = [
-			{name: "General", label: 'General'}
-		];
-
-		uiBox = new FlxUITabMenu(null, tabs, true);
-        uiBox.scrollFactor.set(0, 0);
-		uiBox.resize(300, 400);
+		uiBox = new UIWindow(0, 20, 300, 400, "Dialogue ToolBar");
 		uiBox.x = FlxG.width - uiBox.width - 20;
-		uiBox.y += 20;
+        uiBox.scrollFactor.set(0, 0);
 		add(uiBox);
 
         addGeneralUI();
@@ -111,7 +105,6 @@ class DialogueBoxEditor extends FlxState {
     }
 
     function updateGUI() {
-		deleteDialogue.visible = (curIndex == texts.length - 1 && texts.length > 1);
         if (arrayProperties()[2] == null) {
             changePropertiesValue(2, "normal");
         }
@@ -133,6 +126,8 @@ class DialogueBoxEditor extends FlxState {
     override function update(elapsed) {
         //hasFocus is updated here
         super.update(elapsed);
+        
+        deleteDialogue.visible = (curIndex == texts.length - 1 && texts.length > 1);
 
 		backspaceTime = (FlxG.keys.pressed.BACKSPACE ? backspaceTime + 1 : 0);
 
@@ -320,9 +315,6 @@ class DialogueBoxEditor extends FlxState {
     }
 
     function addGeneralUI():Void {
-		var tab_group_note = new FlxUI(null, uiBox);
-		tab_group_note.name = 'General';
-
         inputChar = new UIInputText(10, 20, 85 * 2, arrayProperties()[0], 8);
 		inputChar.callback = function onType(s, enter) {
             changePropertiesValue(0, s);
@@ -347,18 +339,16 @@ class DialogueBoxEditor extends FlxState {
 			updateShit();
         });
 
-        tab_group_note.add(inputChar);
-        tab_group_note.add(text);
-        tab_group_note.add(dialogStyle);
-        tab_group_note.add(text2);
-		tab_group_note.add(deleteDialogue);
-
-		uiBox.addGroup(tab_group_note);
+        uiBox.add(inputChar);
+        uiBox.add(text);
+        uiBox.add(dialogStyle);
+        uiBox.add(text2);
+		uiBox.add(deleteDialogue);
 	}
 
     var inputChar:UIInputText;
 
-	var uiBox:FlxUITabMenu;
+	var uiBox:UIWindow;
 
 	var dialogStyle:UIDropDownMenu;
 
