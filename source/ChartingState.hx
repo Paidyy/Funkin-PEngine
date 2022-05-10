@@ -159,7 +159,7 @@ class ChartingState extends MusicBeatState {
 
 	var _songGlobalNotes:SwagGlobalNotes;
 
-	override public function new(?song:SwagSong = null, ?daSongName = null) {
+	override public function new(?song:SwagSong = null, ?daSongName = null, ?globalNotes:SwagGlobalNotes) {
 		super();
 
 		if (song == null) {
@@ -193,7 +193,13 @@ class ChartingState extends MusicBeatState {
 				PlayState.currentPlaystate = new PlayState();
 			PlayState.currentPlaystate.stage = new Stage(_song.stage);
 		}
-		_songGlobalNotes = Song.parseGlobalNotesJSONshit(_song.song);
+		if (_songGlobalNotes == null) {
+			_songGlobalNotes = PlayState.SONGglobalNotes;
+		}
+		else {
+			_songGlobalNotes = globalNotes;
+		}
+		
 		if (_songGlobalNotes == null) {
 			_songGlobalNotes = {
 				notes: []
@@ -836,6 +842,7 @@ class ChartingState extends MusicBeatState {
 				lastSection = curSection;
 
 				PlayState.SONG = _song;
+				PlayState.SONGglobalNotes = _songGlobalNotes;
 				FlxG.sound.music.stop();
 				vocals.stop();
 				FlxG.mouse.visible = false;
