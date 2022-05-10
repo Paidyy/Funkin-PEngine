@@ -1,5 +1,6 @@
 package;
 
+import flixel.util.FlxTimer;
 import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
@@ -390,6 +391,64 @@ class Note extends FlxSprite {
 	//function for lua note shit
 	public function toArray():Array<Dynamic> {
 		return [strumTime, noteData, sustainLength, action, actionValue];
+	}
+
+	public function onSongPosition() {
+		var actionValueFloat = Std.parseFloat(actionValue);
+		if (!blockActions) {
+			switch (action.toLowerCase()) {
+				case "subtitle", "sub":
+					PlayState.addSubtitle(actionValue);
+				case "p1 icon alpha":
+					PlayState.currentPlaystate.iconP1.alpha = actionValueFloat;
+				case "p2 icon alpha":
+					PlayState.currentPlaystate.iconP2.alpha = actionValueFloat;
+				case "picos":
+					if (PlayState.gf.curCharacter == "pico-speaker") {
+						PlayState.gf.playAnim("picoShoot" + actionValue);
+					}
+				case "change character":
+					var splicedValue = actionValue.split(", ");
+					PlayState.currentPlaystate.changeCharacter(splicedValue[0], splicedValue[1]);
+				case "change stage":
+					PlayState.currentPlaystate.changeStage(actionValue);
+				case "change scroll speed":
+					PlayState.currentPlaystate.curSpeed = actionValueFloat;
+				case "add camera zoom":
+					PlayState.currentPlaystate.addCameraZoom(actionValueFloat);
+				case "hey":
+					PlayState.bf.playAnim('hey', true);
+					PlayState.gf.playAnim('cheer', true);
+				case "play animation":
+					var splicedValue = actionValue.split(", ");
+					switch (splicedValue[0]) {
+						case "bf":
+							PlayState.bf.playAnim(splicedValue[1], true);
+						case "gf":
+							PlayState.gf.playAnim(splicedValue[1], true);
+						case "dad":
+							PlayState.dad.playAnim(splicedValue[1], true);
+					}
+			}
+		}
+		blockActions = true;
+	}
+
+	public function onPlayerHit() {
+		if (!blockActions) {
+			switch (action.toLowerCase()) {
+				case "ebola":
+					new FlxTimer().start(0.01, function(timer:FlxTimer) {
+						PlayState.currentPlaystate.health -= 0.001;
+					}, 0);
+				case "damage":
+					if (actionValue != null)
+						PlayState.currentPlaystate.health -= Std.parseFloat(actionValue);
+					else
+						PlayState.currentPlaystate.health -= 0.3;
+			}
+		}
+		blockActions = true;
 	}
 
 	public var notePrefix:String = "blue";
