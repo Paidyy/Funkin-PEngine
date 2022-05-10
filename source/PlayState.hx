@@ -166,6 +166,42 @@ class PlayState extends MusicBeatState {
 
 	public var createNotif:Notification;
 
+	var lightningStrikeBeat:Int = 0;
+	var lightningOffset:Int = 8;
+
+	var curLight:Int = 0;
+	var misses:Int = 0;
+
+	public static var openSettings:Bool = false;
+
+	var debugStageAsset:FlxSprite;
+	var debugStageAssetSize = 1.0;
+
+	var video:MP4Handler;
+	var isTankRolling:Bool;
+
+	public static var gfVersion:String;
+
+	var timeLeftText:FlxText;
+
+	#if windows
+	var lua:LuaShit;
+	#else
+	var lua(null, null):Dynamic = null;
+	#end
+
+	public static var week:Week;
+
+	var iconCrown:FlxSprite;
+
+	var db:DialogueBoxOg;
+
+	var blockSpamChecker:Bool;
+
+	public var forceDialogueBox:Bool;
+
+	public static var openAchievements:Bool = false;
+
 	public function addLuaSprite(name:String, sprite:FlxSprite) {
 		luaSprites.set(name, sprite);
 		add(luaSprites.get(name));
@@ -321,7 +357,8 @@ class PlayState extends MusicBeatState {
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial');
 
-		SONGglobalNotes = Song.parseGlobalNotesJSONshit(SONG.song);
+		if (SONGglobalNotes == null) 
+			SONGglobalNotes = Song.parseGlobalNotesJSONshit(SONG.song);
 
 		Conductor.mapBPMChanges(SONG);
 		Conductor.changeBPM(SONG.bpm);
@@ -589,7 +626,7 @@ class PlayState extends MusicBeatState {
 			add(stage.bgTank2);
 			add(stage.bgTank3);
 			add(stage.bgTank4);
-			add(stage.bgTank5);
+			add(stage.bgTank5); 
 		}
 
 		bgDimness = new FlxSprite().makeGraphic(FlxG.width + 1000, FlxG.height + 1000, FlxColor.BLACK);
@@ -602,6 +639,7 @@ class PlayState extends MusicBeatState {
 		// doof.x += 70;
 		// doof.y = FlxG.height * 0.5;
 		doof.scrollFactor.set();
+
 		doof.finishThing = startCountdown;
 
 		db = new DialogueBoxOg(dialogue);
@@ -697,6 +735,13 @@ class PlayState extends MusicBeatState {
 			}
 		}
 
+		var songTimeBar = new FlxBar(0, 0, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width, 3, Conductor,
+		"songPosition", 0, FlxG.sound.music.length);
+		songTimeBar.numDivisions = 1200;
+		songTimeBar.scrollFactor.set();
+		songTimeBar.createColoredEmptyBar(FlxColor.TRANSPARENT);
+		add(songTimeBar);
+
 		if (stage.name.startsWith('school'))
 			healthBar = new FlxBar(healthBarBG.x + 8, healthBarBG.y + 8, healthBarStyle, Std.int(healthBarBG.width - 16), Std.int(healthBarBG.height - 16), this, "health", 0, 2);
 		else
@@ -753,7 +798,7 @@ class PlayState extends MusicBeatState {
             hostMode.color = FlxColor.YELLOW;
             add(hostMode);
 			hostMode.cameras = [camHUD];
-        }
+		}
 
 		timeLeftText.alpha = 0;
 		healthBar.alpha = 0;
@@ -765,6 +810,7 @@ class PlayState extends MusicBeatState {
 		strumLineNotes.cameras = [camHUD];
 		notes.cameras = [camHUD];
 
+		songTimeBar.cameras = [camStatic];
 		timeLeftText.cameras = [camHUD];
 		healthBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
@@ -2437,7 +2483,7 @@ class PlayState extends MusicBeatState {
 
 				if (daNote.wasInSongPosition) {
 					if (daNote.action != null && daNote.noteData == -1) {
-						ActionNoteOnGhostPressed(daNote);
+						daNote.onSongPosition();
 						removeNote(daNote);
 					}
 				}
@@ -3946,7 +3992,7 @@ class PlayState extends MusicBeatState {
 			if (!note.isSustainNote) {
 				popUpScore(note);
 				sendMultiplayerMessage("NP::" + note.strumTime + "::" + note.noteData);
-				ActionNoteonPressed(note);
+				note.onPlayerHit();
 
 				removeNote(note);
 			}
@@ -4336,105 +4382,6 @@ class PlayState extends MusicBeatState {
 		#end
 	}
 
-	var lightningStrikeBeat:Int = 0;
-	var lightningOffset:Int = 8;
-
-	/*
-	
-	l
-	o
-	n
-	g
-
-	s
-	p
-	a
-	c
-	e
-
-	*/
-
-    function ActionNoteonPressed(daNote:Note) {
-		if (!daNote.blockActions) {
-			switch (daNote.action.toLowerCase()) {
-				case "ebola":
-					new FlxTimer().start(0.01, function(timer:FlxTimer) {
-						health -= 0.001;
-					}, 0);	
-				case "damage":
-					if (daNote.actionValue != null)
-						health -= Std.parseFloat(daNote.actionValue);
-					else
-						health -= 0.3;
-			}
-		}
-		daNote.blockActions = true;
-    }
-
-    function ActionNoteOnGhostPressed(daNote:Note) {
-		var actionValueFloat = Std.parseFloat(daNote.actionValue);
-		if (!daNote.blockActions) {
-			switch (daNote.action.toLowerCase()) {
-				case "subtitle", "sub":
-					addSubtitle(daNote.actionValue);
-				case "p1 icon alpha":
-					iconP1.alpha = actionValueFloat;
-				case "p2 icon alpha":
-					iconP2.alpha = actionValueFloat;
-				case "picos":
-					if (gf.curCharacter == "pico-speaker") {
-						gf.playAnim("picoShoot" + daNote.actionValue);
-					}
-				case "change character":
-					var splicedValue = daNote.actionValue.split(", ");
-					changeCharacter(splicedValue[0], splicedValue[1]);
-				case "change stage":
-					changeStage(daNote.actionValue);
-				case "change scroll speed":
-					curSpeed = actionValueFloat;
-				case "add camera zoom":
-					addCameraZoom(actionValueFloat);
-				case "hey":
-					bf.playAnim('hey', true);
-					gf.playAnim('cheer', true);
-				case "play animation":
-					var splicedValue = daNote.actionValue.split(", ");
-					switch (splicedValue[0]) {
-						case "bf":
-							bf.playAnim(splicedValue[1], true);
-						case "gf":
-							gf.playAnim(splicedValue[1], true);
-						case "dad":
-							dad.playAnim(splicedValue[1], true);
-					}
-			}
-		}
-		daNote.blockActions = true;
-    }
-
-	var curLight:Int = 0;
-	var misses:Int = 0;
-
-	public static var openSettings:Bool = false;
-
-	var debugStageAsset:FlxSprite;
-	var debugStageAssetSize = 1.0;
-
-	var video:MP4Handler;
-	var isTankRolling:Bool;
-
-	public static var gfVersion:String;
-
-	var timeLeftText:FlxText;
-
-	#if windows
-	var lua:LuaShit;
-	#else
-	var lua(null, null):Dynamic = null;
-	#end
-
-	public static var week:Week;
-
 	public function updateCharPos(arg0:String) {
 		switch (arg0) {
 			case "dad":
@@ -4474,16 +4421,6 @@ class PlayState extends MusicBeatState {
 		currentCameraTween = FlxTween.num(camZoom, stage.camZoom, 0.8, null, f -> camZoom = f);
 		currentHUDCameraTween = FlxTween.num(camHUD.zoom, 1, 0.8, null, f -> camHUD.zoom = f);
 	}
-
-	var iconCrown:FlxSprite;
-
-	var db:DialogueBoxOg;
-
-	var blockSpamChecker:Bool;
-
-	public var forceDialogueBox:Bool;
-
-	public static var openAchievements:Bool = false;
 }
 
 /*		⠀⠀⠀⡯⡯⡾⠝⠘⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⠘⡮⣣⠪⠢⡑⡌
