@@ -83,14 +83,14 @@ class Stage extends FlxTypedGroup<Dynamic> {
 
     public function applyStageShitToPlayState() {
         PlayState.camZoom = camZoom;
-		if (PlayState.currentPlaystate.scoreTxt != null) {
+		if (PlayState.currentPlaystate.scoreTxtFlx != null) {
 			if (name.startsWith('school')) {
-				PlayState.currentPlaystate.scoreTxt.setFormat(Paths.font("pixel.otf"), PlayState.currentPlaystate.scoreTxt.size - 6, FlxColor.WHITE);
-				PlayState.currentPlaystate.scoreTxt.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.fromString("#404047"), 3);
+				PlayState.currentPlaystate.scoreTxtFlx.setFormat(Paths.font("pixel.otf"), PlayState.currentPlaystate.scoreTxtFlx.size - 6, FlxColor.WHITE);
+				PlayState.currentPlaystate.scoreTxtFlx.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.fromString("#404047"), 3);
 			}
 			else {
-				PlayState.currentPlaystate.scoreTxt.setFormat(Paths.font("vcr.ttf"), PlayState.currentPlaystate.scoreTxt.size, FlxColor.WHITE);
-				PlayState.currentPlaystate.scoreTxt.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
+				PlayState.currentPlaystate.scoreTxtFlx.setFormat(Paths.font("vcr.ttf"), PlayState.currentPlaystate.scoreTxtFlx.size, FlxColor.WHITE);
+				PlayState.currentPlaystate.scoreTxtFlx.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
 			}
         }
     }
