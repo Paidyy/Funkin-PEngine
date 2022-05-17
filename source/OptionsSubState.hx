@@ -1,5 +1,6 @@
 package;
 
+import flixel.util.FlxTimer;
 import sys.FileSystem;
 import flixel.FlxObject;
 import flixel.math.FlxPoint;
@@ -115,9 +116,10 @@ class OptionsSubState extends FlxSubState {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			MainMenuState.selectedSomethin = false;
 			PlayState.openSettings = false;
+			PlayState.cancelGameResume = true;
 			if (inGame) {
 				close();
-				PlayState.currentPlaystate.pauseGame(true);
+				PlayState.currentPlaystate.pauseGame(true, 2);
 			}
 			else 
 				FlxG.switchState(new MainMenuState(true));
@@ -130,6 +132,7 @@ class OptionsPrefencesSubState extends OptionSubState {
 		var items = [
 			new OptionItem('FPS Limit: ' + Options.framerate),
 			new OptionItem('Background Dimness: ' + Options.bgDimness),
+			new OptionItem('Background Blur: ' + Options.bgBlur + "XY"),
 			new OptionItem('Discord Rich Presence', true, Options.discordRPC, value -> Options.discordRPC = value),
 			new OptionItem('Disable Crash Handler', true, Options.disableCrashHandler, value -> Options.disableCrashHandler = value),
 			new OptionItem('Update Checker', true, Options.updateChecker, value -> Options.updateChecker = value),
@@ -157,6 +160,12 @@ class OptionsPrefencesSubState extends OptionSubState {
 					Options.bgDimness = CoolUtil.roundFloat(Options.bgDimness);
 					setOptionText(curSelected, "Background Dimness: " + Options.bgDimness);
 				}
+				else if (itemList[curSelected].text.startsWith("Background Blur")) {
+					if (Options.bgBlur > 0)
+						Options.bgBlur -= 1;
+					Options.bgBlur = CoolUtil.roundFloat(Options.bgBlur);
+					setOptionText(curSelected, "Background Blur: " + Options.bgBlur + "XY");
+				}
 			}
 			if (Controls.check(UI_RIGHT)) {
 				if (itemList[curSelected].text.startsWith("FPS Limit")) {
@@ -169,6 +178,12 @@ class OptionsPrefencesSubState extends OptionSubState {
 						Options.bgDimness += 0.05;
 					Options.bgDimness = CoolUtil.roundFloat(Options.bgDimness);
 					setOptionText(curSelected, "Background Dimness: " + Options.bgDimness);
+				}
+				else if (itemList[curSelected].text.startsWith("Background Blur")) {
+					if (Options.bgBlur < 255)
+						Options.bgBlur += 1;
+					Options.bgBlur = CoolUtil.roundFloat(Options.bgBlur);
+					setOptionText(curSelected, "Background Blur: " + Options.bgBlur + "XY");
 				}
 			}
 		}
@@ -195,7 +210,18 @@ class OptionsGameplaySubState extends OptionSubState {
 			new OptionItem("Controls"),
 			new OptionItem("Ghost Tapping", true, Options.ghostTapping, value -> Options.ghostTapping = value),
 			new OptionItem("Downscroll", true, Options.downscroll, value -> Options.downscroll = value),
-			new OptionItem("Disable Spam Checker (pussy mode)", true, Options.disableSpamChecker, value -> Options.disableSpamChecker = value)
+			new OptionItem("Disable Spam Checker (pussy mode)", true, Options.disableSpamChecker, value -> Options.disableSpamChecker = value),
+			new OptionItem("Disable New Combo System", true, Options.disableNewComboSystem, value -> {
+				Options.disableNewComboSystem = value;
+				PlayState.currentPlaystate.combo.clearComboTimer = new FlxTimer();
+				if (value) {
+					PlayState.currentPlaystate.combo.clearComboTimer = null;
+				}
+				else {
+					PlayState.currentPlaystate.combo.initTimer();
+				}
+			}),
+			new OptionItem("Chill Mode", true, Options.chillMode, value -> Options.chillMode = value)
 		];
 		super(items, inGame);
 	}
@@ -241,7 +267,7 @@ class OptionSubState extends FlxSubState {
 		for (option in itemList) {
 			curIndex++;
 			option.ID = curIndex;
-			option.y += curY;
+			option.y += curY + (curIndex * 15);
 			curY += option.height + 25;
 			option.scrollFactor.set(1, 1);
 			items.add(option);
