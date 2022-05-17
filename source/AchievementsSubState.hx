@@ -94,7 +94,9 @@ class AchievementsSubState extends FlxSubState {
 			camera.follow(null);
 			camera.scroll.y = 0;
             PlayState.openAchievements = false;
-            close();
+			PlayState.cancelGameResume = true;
+			close();
+			PlayState.currentPlaystate.pauseGame(true, 2);
         }
 	}
 
