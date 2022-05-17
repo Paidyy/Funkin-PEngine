@@ -1,5 +1,8 @@
 package;
 
+import flixel.group.FlxGroup.FlxTypedGroup;
+import openfl.display.BitmapData;
+import openfl.geom.ColorTransform;
 import flixel.system.FlxSound;
 import OptionsSubState.Background;
 import flixel.FlxG;
@@ -17,6 +20,7 @@ using StringTools;
  * Loosley based on FlxTypeText lolol
  */
 class Alphabet extends FlxSpriteGroup {
+	public var borderGroup:FlxSpriteGroup;
 	public var delay:Float = 0.05;
 	public var paused:Bool = false;
 
@@ -42,6 +46,28 @@ class Alphabet extends FlxSpriteGroup {
 	public var isBold:Bool = false;
 
 	public var text(default, set):String = "";
+
+	/**
+	 * unused for now
+	 */
+	public var borderSize(default, set):Float = 0;
+
+	function set_borderSize(value:Float):Float {
+		borderSize = value;
+		set_text(text);
+		return borderSize;
+	}
+
+	/**
+	 * Doesn't work for bold font!
+	 */
+	public var fontColor(default, set):Null<FlxColor> = null;
+
+	function set_fontColor(value:Null<FlxColor>):Null<FlxColor> {
+		fontColor = value;
+		set_text(text);
+		return fontColor;
+	}
 
 	function set_text(value:String):String {
 		//i should do this before, but i learnt about this today by accident lol 
@@ -91,6 +117,8 @@ class Alphabet extends FlxSpriteGroup {
 		isBold = bold;
 		this.size = size;
 
+		borderGroup = new FlxSpriteGroup();
+
 		if (text != "") {
 			if (typed) {
 				addTypedText();
@@ -131,6 +159,7 @@ class Alphabet extends FlxSpriteGroup {
 	}
 
 	public function addText() {
+		remove(borderGroup);
 		doSplitWords();
 		
 		yMulti = 0;
@@ -176,7 +205,7 @@ class Alphabet extends FlxSpriteGroup {
 				}
 
 				// var letter:AlphaCharacter = new AlphaCharacter(30 * loopNum, 0);
-				var letter:AlphaCharacter = new AlphaCharacter(xPos, 55 * yMulti, size);
+				var letter:AlphaCharacter = new AlphaCharacter(xPos, 55 * yMulti, size, isBold ? null : fontColor, borderSize);
 				letter.row = curRow;
 				letter.lastSprite = lastSprite;
 
@@ -193,11 +222,20 @@ class Alphabet extends FlxSpriteGroup {
 						letter.createLetter(character);
 					}
 				}
-
+				if (letter.border != null) {
+					var borderSprite = new FlxSprite();
+					borderSprite.pixels = letter.border;
+					if (borderSprite != null) {
+						borderGroup.add(borderSprite);
+					}
+				}
 				add(letter);
 
 				lastSprite = letter;
 			}
+		}
+		if (borderGroup.length > 0) {
+			add(borderGroup);
 		}
 		generatedText = true;
 	}
@@ -257,7 +295,7 @@ class Alphabet extends FlxSpriteGroup {
 				}
 
 				// var letter:AlphaCharacter = new AlphaCharacter(30 * loopNum, 0);
-				var letter:AlphaCharacter = new AlphaCharacter(xPos, 55 * yMulti, size);
+				var letter:AlphaCharacter = new AlphaCharacter(xPos, 55 * yMulti, size, isBold ? null : fontColor, borderSize);
 				letter.row = curRow;
 				letter.lastSprite = lastSprite;
 
@@ -320,7 +358,10 @@ class AlphaCharacter extends FlxSprite {
 
 	public var size:Float = 1;
 
-	public function new(x:Float, y:Float, size:Float) {
+	public var borderSize:Float;
+	public var border:BitmapData;
+
+	public function new(x:Float, y:Float, size:Float, ?fontColor:FlxColor = null, ?borderSize:Float = 0) {
 		super(x, y);
 		if (sparrow == null) {
 			sparrow = Paths.getSparrowAtlas('alphabet');
@@ -330,14 +371,32 @@ class AlphaCharacter extends FlxSprite {
 		setGraphicSize(Std.int(width * size));
 		updateHitbox();
 		this.size = size;
+		this.borderSize = borderSize;
 
 		antialiasing = true;
+		if (fontColor != null)
+			colorTransform.color = fontColor;
+	}
+
+	function addBorder() {
+		if (borderSize > 0) {
+			border = pixels.clone();
+			var borderColor = new ColorTransform();
+			borderColor.color = FlxColor.BLACK;
+			border.colorTransform(border.rect, borderColor);
+
+			// border.setGraphicSize(Std.int(border.width * borderSize), Std.int(border.height * borderSize));
+			// _border.x -= (_border.height * borderSize - _border.height) / 2;
+			// _border.y -= (_border.width * borderSize - _border.width) / 2;
+		}
 	}
 
 	public function createBold(letter:String) {
 		animation.addByPrefix(letter, letter.toUpperCase() + " bold", 24);
 		animation.play(letter);
 		updateHitbox();
+
+		addBorder();
 	}
 
 	public function createBlank(letter:String) {
@@ -365,6 +424,8 @@ class AlphaCharacter extends FlxSprite {
 
 		//line break
 		y += (row * 60) * size;
+
+		addBorder();
 	}
 
 	public function createNumber(letter:String):Void {
@@ -376,6 +437,8 @@ class AlphaCharacter extends FlxSprite {
 
 		// line break
 		y += (row * 60) * size;
+
+		addBorder();
 	}
 
 	public function createSymbol(letter:String) {
@@ -428,6 +491,8 @@ class AlphaCharacter extends FlxSprite {
 			case "'":
 				y -= 35 * size;
 		}
+
+		addBorder();
 	}
 
 	public var lastSprite:AlphaCharacter;
