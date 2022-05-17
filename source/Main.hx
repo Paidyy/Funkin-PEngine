@@ -1,5 +1,9 @@
 package;
 
+import flixel.tweens.misc.VarTween;
+import flixel.system.FlxSound;
+import flixel.math.FlxMath;
+import openfl.system.System;
 import Achievement.AchievementObject;
 import openfl.display.Bitmap;
 import openfl.display.Shape;
@@ -135,7 +139,16 @@ class Main extends Sprite {
 }
 
 class Game extends FlxGame {
+	public static var pauseMusic:FlxSound;
+	public static var pauseMusicTween:VarTween;
+
 	override public function update() {
+		if (pauseMusic != null) {
+			if (pauseMusic.playing) {
+				pauseMusicTween.active = true;
+			}
+		}
+		
 		if (Options.disableCrashHandler) {
 			super.update();
 		}
@@ -146,6 +159,24 @@ class Game extends FlxGame {
 			catch (exc) {
 				FlxG.switchState(new CrashHandler(exc));
 			}
+		}
+	}
+
+	public static function playPauseMusic() {
+		pauseMusic = new FlxSound().loadEmbedded(Paths.music('breakfast'), true, true);
+		pauseMusic.volume = 0;
+		pauseMusic.play(false, FlxG.random.int(0, Std.int(pauseMusic.length / 2)));
+		FlxG.sound.list.add(pauseMusic);
+
+		pauseMusicTween = FlxTween.tween(pauseMusic, {volume: 0.9}, 15);
+	}
+
+	public static function stopPauseMusic() {
+		if (pauseMusicTween != null) {
+			pauseMusicTween.cancel();
+		}
+		if (pauseMusic != null) {
+			pauseMusic.stop();
 		}
 	}
 }
@@ -380,6 +411,14 @@ class EFPS extends FPS {
 
 	override public function __enterFrame(deltaTime) {
 		super.__enterFrame(deltaTime);
+
+		//only in debug because it's ugly
+		#if debug
+		if (!text.contains("RAM Used:")) {
+			text += "\nRAM Used: " + FlxMath.roundDecimal(System.totalMemory / 1000000, 1) + "MB";
+			width = textWidth;
+		}
+		#end
 
 		textColor = FlxColor.LIME;
 
