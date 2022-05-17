@@ -438,6 +438,7 @@ class FreeplayState extends MusicBeatState {
 			customSong = true;
 			PlayState.SONG = Song.PEloadFromJson(poop, songs[curSelected].songName.toLowerCase());
 		}
+		PlayState.SONGglobalNotes = Song.parseGlobalNotesJSONshit(poop);
 
 		PlayState.isStoryMode = false;
 		PlayState.storyDifficulty = curDifficulty;

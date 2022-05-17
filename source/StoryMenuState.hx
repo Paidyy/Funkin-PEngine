@@ -384,6 +384,7 @@ class StoryMenuState extends MusicBeatState {
 			} else {
 				PlayState.SONG = Song.PEloadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
 			}
+			PlayState.SONGglobalNotes = Song.parseGlobalNotesJSONshit(PlayState.storyPlaylist[0].toLowerCase());
 			PlayState.storyWeek = weeks[curWeek].id;
 			PlayState.campaignScore = 0;
 			new FlxTimer().start(1, function(tmr:FlxTimer) {

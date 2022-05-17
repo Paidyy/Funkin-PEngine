@@ -250,6 +250,7 @@ class Lobby extends MusicBeatState {
         else if (FileSystem.exists(Paths.PEinst(song))) {
 			PlayState.SONG = Song.PEloadFromJson(song + PlayState.dataFileDifficulty, song);
 		}
+		PlayState.SONGglobalNotes = Song.parseGlobalNotesJSONshit(song);
 
         PlayState.storyWeek = "week-1";
 		trace('CUR WEEK ' + PlayState.storyWeek);
