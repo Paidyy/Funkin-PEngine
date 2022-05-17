@@ -39,6 +39,7 @@ class Character extends AnimatedSprite {
 
 		if (Paths.isCustomPath(Paths.getCharacterPath(curCharacter))) {
 			trace("custom character: " + curCharacter);
+			/*
 			var path = Paths.getCharacterPath(curCharacter) + curCharacter;
 			if (path.startsWith(${Paths.modsLoc} + "/skins/")) {
 				var spltPath = path.split("/");
@@ -49,6 +50,7 @@ class Character extends AnimatedSprite {
 				}
 				path = path.substring(0, path.length - 1);
 			}
+			*/
 			frames = Cache.cacheCharacterAssets(curCharacter);
 		}
 		else {
@@ -63,7 +65,7 @@ class Character extends AnimatedSprite {
 		}
 
 		var idleAnim = "idle";
-
+		
 		setConfigPath(Paths.getCharacterPath(curCharacter) + 'config.yml');
 
 		if (Cache.charactersConfigs.exists(curCharacter)) {
@@ -117,6 +119,9 @@ class Character extends AnimatedSprite {
 				} else if (Std.string(config.get('flipX')) == "false") {
 					flipX = false;
 				}
+			}
+			else {
+				trace("character " + curCharacter + " doesnt have a config!");
 			}
 		}
 
