@@ -54,7 +54,14 @@ class Cache {
     }
 
     public static function cacheCharacterAssets(daChar, ?forceCache:Bool = false) {
-		var path = Paths.getCharacterPath(daChar) + daChar;
+		var path = Paths.getCharacterPath(daChar);
+		if (path.startsWith(${Paths.modsLoc} + "/skins/")) {
+			var spltPath = path.split("/");
+			path += spltPath[spltPath.length - 2];
+		}
+		else {
+			path += daChar;
+		}
 		if (!Cache.charactersAssets.exists(daChar) || forceCache) {
             trace("caching character: " + path + "...");
             if (FileSystem.exists(path + ".txt")) {
