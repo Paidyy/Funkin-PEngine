@@ -1,5 +1,6 @@
 package;
 
+import Main.Game;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
@@ -18,20 +19,25 @@ class PauseSubState extends MusicBeatSubstate {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
 	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Achievements', 'Options', 'Exit to menu'];
-	var curSelected:Int = 0;
+	public static var curSelected:Int = 0;
 
-	var pauseMusic:FlxSound;
+	//var pauseMusic:FlxSound;
 
-	public function new(x:Float, y:Float, ?skipTween:Bool = false) {
+	public function new(x:Float, y:Float, ?skipTween:Bool = false, ?popIndex:Int = 0) {
 		super();
 		
 		PlayState.currentPlaystate.setPaused(true);
 
+		/*
 		pauseMusic = new FlxSound().loadEmbedded(Paths.music('breakfast'), true, true);
 		pauseMusic.volume = 0;
 		pauseMusic.play(false, FlxG.random.int(0, Std.int(pauseMusic.length / 2)));
 
 		FlxG.sound.list.add(pauseMusic);
+		*/
+
+		if (Game.pauseMusic == null || !Game.pauseMusic.playing)
+			Game.playPauseMusic();
 
 		var levelInfo:FlxText = new FlxText(0, 15, 0, "", 32);
 		levelInfo.text += PlayState.SONG.song;
@@ -66,7 +72,7 @@ class PauseSubState extends MusicBeatSubstate {
 			FlxTween.tween(PlayState.currentPlaystate.pauseBG, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 			FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
 			FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.5});
-		} 
+		}
 		else {
 			PlayState.currentPlaystate.pauseBG.alpha = 0.6;
 			levelInfo.alpha = 1;
@@ -85,15 +91,13 @@ class PauseSubState extends MusicBeatSubstate {
 			grpMenuShit.add(songText);
 		}
 
-		changeSelection();
+		changeSelection(popIndex, true);
 
 		cameras = [PlayState.camStatic];
 	}
 
 	override function update(elapsed:Float) {
 		var daSelected:String = menuItems[curSelected];
-		if (pauseMusic.volume < 0.5)
-			pauseMusic.volume += 0.01 * elapsed;
 
 		super.update(elapsed);
 
@@ -111,6 +115,7 @@ class PauseSubState extends MusicBeatSubstate {
 		if (accepted) {
 			switch (daSelected) {
 				case "Resume":
+					PlayState.cancelGameResume = false;
 					close();
 				case "Restart Song":
 					FlxG.resetState();
@@ -131,14 +136,13 @@ class PauseSubState extends MusicBeatSubstate {
 		}
 	}
 
-	override function destroy() {
-		pauseMusic.destroy();
-
-		super.destroy();
-	}
-
-	function changeSelection(change:Int = 0):Void {
-		curSelected += change;
+	function changeSelection(change:Int = 0, ?set:Bool = false):Void {
+		if (set) {
+			curSelected = change;
+		}
+		else {
+			curSelected += change;
+		}
 
 		if (curSelected < 0)
 			curSelected = menuItems.length - 1;
