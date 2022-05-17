@@ -26,6 +26,7 @@ animations:
   name: GF Dancing Beat
   y: -9
   indices: [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+  isIdle: true
  hairBlow:
   name: GF Dancing Beat Hair blowing
   x: 45
