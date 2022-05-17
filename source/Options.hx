@@ -39,6 +39,9 @@ class Options {
 	public static var updateChecker:Bool = true;
 	public static var disableSpamChecker:Bool = false;
 	public static var freeplayListenVocals:Bool = false;
+	public static var bgBlur:Float = 0.0;
+	public static var disableNewComboSystem:Bool = false;
+	public static var chillMode:Bool = false;
 	
 	private static var _optionsSave:AltSave;
 	private static var _controlsSave:AltSave;
