@@ -126,6 +126,7 @@ class PauseSubState extends MusicBeatSubstate {
 					PlayState.openSettings = true;
 					close();
 				case "Exit to menu":
+					PlayState.currentPlaystate.songPitch = 1;
 					FlxG.switchState(new MainMenuState());
 			}
 		}

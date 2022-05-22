@@ -103,6 +103,8 @@ class Combo extends FlxBasic {
 	public function failCombo() {
 		staticCombo = 0;
         curCombo = 0;
+		if (FreeplayState.modifiers.contains(FULLCOMBO))
+			PlayState.currentPlaystate.health = 0;
     }
 
 	function set_curCombo(value) {

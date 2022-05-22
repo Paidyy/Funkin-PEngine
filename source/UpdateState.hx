@@ -31,7 +31,7 @@ class UpdateState extends FlxState {
 
     public var file = new ByteArray();
     var request:URLRequest;
-    var stream:Strem;
+    var stream:URLStream;
 
     var text:FlxText;
 
@@ -62,7 +62,7 @@ class UpdateState extends FlxState {
         if (!FileSystem.exists("funkin.updat")) {
             request = new URLRequest(URL);
 
-            stream = new Strem();
+            stream = new URLStream();
             stream.load(new URLRequest(URL));
             stream.addEventListener(ProgressEvent.PROGRESS, (event) -> onProgress(event));
             stream.addEventListener(Event.COMPLETE, (event) -> onComplete(event));
@@ -96,7 +96,8 @@ class UpdateState extends FlxState {
         #end
 
         if (!fileExists) {
-            file = stream.getByteArray();
+            @:privateAccess
+			file = stream.__data;
             CoolUtil.writeToFile(programPath + "funkin.updat", file, true);
         }
 
@@ -106,13 +107,6 @@ class UpdateState extends FlxState {
         Sys.command("./updateUnzipper");
         #end
         Sys.exit(1);
-    }
-}
-
-class Strem extends URLStream {
-    public function getByteArray():ByteArray {
-        //what the fuck why is it private fuck fuck fuck fuck fuckkkkkkkkkkkkkkkkk
-        return __data;
     }
 }
 

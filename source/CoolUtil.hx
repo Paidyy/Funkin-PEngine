@@ -1,5 +1,6 @@
 package;
 
+import flixel.system.FlxSound;
 import Song.SwagSong;
 import sys.io.File;
 import haxe.Exception;
@@ -19,6 +20,57 @@ import openfl.utils.Assets as OpenFlAssets;
 
 class CoolUtil {
 	public static var difficultyArray:Array<String> = ['EASY', "NORMAL", "HARD"];
+
+	#if lime
+	public static function setPitch(sound:FlxSound, pitch:Float = 1.0) {
+		try {
+			@:privateAccess
+			lime.media.openal.AL.sourcef(sound._channel.__source.__backend.handle, lime.media.openal.AL.PITCH, pitch);
+		}
+		catch (exc) {}
+	}
+
+	public static function getPitch(sound:FlxSound) {
+		try {
+			@:privateAccess
+			return lime.media.openal.AL.getSourcef(sound._channel.__source.__backend.handle, lime.media.openal.AL.PITCH);
+		}
+		catch (exc) { 
+			return 1;
+		}
+	}
+	#end
+
+	public static function setDifficultyList(song:String):Array<String> {
+		var DIFFS = [];
+		for (file in FileSystem.readDirectory(Paths.getSongPath(song, true))) {
+			if (file.startsWith(song.toLowerCase()) && file.endsWith(".json")) {
+				var diff = file.substring(0, file.length - 5);
+				diff = diff.split("-")[diff.split("-").length - 1];
+				if (diff == song.toLowerCase() || diff == song.toLowerCase().split("-")[song.toLowerCase().split("-").length - 1])
+					diff = "normal";
+				DIFFS.push(diff.toUpperCase());
+			}
+		}
+		var diffs = [];
+		if (DIFFS.contains("EASY")) {
+			diffs.push(DIFFS[DIFFS.indexOf("EASY")]);
+			DIFFS.remove("EASY");
+		}
+		if (DIFFS.contains("NORMAL")) {
+			diffs.push(DIFFS[DIFFS.indexOf("NORMAL")]);
+			DIFFS.remove("NORMAL");
+		}
+		if (DIFFS.contains("HARD")) {
+			diffs.push(DIFFS[DIFFS.indexOf("HARD")]);
+			DIFFS.remove("HARD");
+		}
+		for (diff in DIFFS) {
+			diffs.push(diff);
+		}
+		difficultyArray = diffs;
+		return difficultyArray;
+	}
 
 	/**
 	 * Writes to file, if the file doesnt exist it creates one

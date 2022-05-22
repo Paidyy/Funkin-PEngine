@@ -258,6 +258,12 @@ class TitleState extends MusicBeatState {
 	var transitioning:Bool = false;
 
 	override function update(elapsed:Float) {
+		if (FlxG.keys.pressed.UP) {
+			CoolUtil.setPitch(FlxG.sound.music, CoolUtil.getPitch(FlxG.sound.music) + 0.0005);
+		}
+		if (FlxG.keys.pressed.DOWN) {
+			CoolUtil.setPitch(FlxG.sound.music, CoolUtil.getPitch(FlxG.sound.music) - 0.0005);
+		}
 		if (FlxG.keys.justPressed.F1)
 			CoolUtil.crash();
 

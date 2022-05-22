@@ -188,6 +188,7 @@ class NotificationTweenManager extends FlxTweenManager { }
 
 class CrashHandler extends FlxState {
 	// inspired from ddlc mod and old minecraft crash handler
+	// can someone explain to me why some people use external exes for crash handlers? it's fucking dumb
 	var exception:Exception;
 	var gf:Character;
 

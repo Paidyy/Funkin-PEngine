@@ -1,5 +1,7 @@
 package;
 
+import flixel.group.FlxSpriteGroup;
+import flixel.FlxSubState;
 import flixel.system.FlxAssets.FlxSoundAsset;
 import flixel.system.FlxSound;
 import sys.io.File;
@@ -31,6 +33,8 @@ using StringTools;
 
 class FreeplayState extends MusicBeatState {
 	var songs:Array<SongMetadata> = [];
+
+	public static var modifiers:Array<Modifiers> = [];
 
 	var selector:FlxText;
 	var curSelected:Int = 0;
@@ -220,7 +224,7 @@ class FreeplayState extends MusicBeatState {
 		var downBarText:FlxText = new FlxText(0, 0, 0, "", 18);
 		downBarText.setFormat(Paths.font("vcr.ttf"), downBarText.size, FlxColor.WHITE);
 		downBarText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
-		downBarText.text = "SPACE - Listen to song     R - Select Random Song" + (erectSongExists ?  "     E - Toggle Erect Mode" : "");
+		downBarText.text = "SPACE - Listen to song     R - Select Random Song     SHIFT - Open Gameplay Modifier" + (erectSongExists ?  "     E - Toggle Erect Mode" : "");
 		downBarText.screenCenter(X);
 
 		var downBarBG:FlxSprite = new FlxSprite(0, FlxG.height - downBarText.height - 5).makeGraphic(FlxG.width, Std.int(downBarText.height) + 6, 0xFF000000);
@@ -327,6 +331,10 @@ class FreeplayState extends MusicBeatState {
 			changeSelection(1);
 		}
 
+		if (FlxG.keys.justPressed.SHIFT) {
+			openSubState(new ModifierSubState());
+		}
+
 		if (FlxG.keys.justPressed.R) {
 			curSelected = new FlxRandom().int(0, songs.length);
 			changeSelection(0);
@@ -428,6 +436,14 @@ class FreeplayState extends MusicBeatState {
 
 	function goToSong() {
 		vocals.stop();
+		switch (diffText.text.toLowerCase()) {
+			case "easy":
+				curDifficulty = 0;
+			case "normal":
+				curDifficulty = 1;
+			case "hard":
+				curDifficulty = 2;
+			}
 		var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 
 		var customSong = false;
@@ -467,12 +483,17 @@ class FreeplayState extends MusicBeatState {
 		FlxG.autoPause = false;
 	}
 
-	function changeDiff(change:Int = 0) {
-		curDifficulty += change;
+	function changeDiff(change:Int = 0, ?set:Bool = false) {
+		if (!set) {
+			curDifficulty += change;
+		}
+		else {
+			curDifficulty = change;
+		}
 
 		if (curDifficulty < 0)
-			curDifficulty = 2;
-		if (curDifficulty > 2)
+			curDifficulty = CoolUtil.difficultyArray.length - 1;
+		if (curDifficulty > CoolUtil.difficultyArray.length - 1)
 			curDifficulty = 0;
 
 		if (songs[curSelected] != null) {
@@ -481,16 +502,17 @@ class FreeplayState extends MusicBeatState {
 			#end
 		}
 
-		switch (curDifficulty) {
-			case 0:
-				diffText.text = "EASY";
+		diffText.text = CoolUtil.difficultyArray[curDifficulty];
+
+		switch (diffText.text) {
+			case "EASY":
 				diffText.color = FlxColor.LIME;
-			case 1:
-				diffText.text = 'NORMAL';
+			case "NORMAL":
 				diffText.color = FlxColor.YELLOW;
-			case 2:
-				diffText.text = "HARD";
+			case "HARD":
 				diffText.color = FlxColor.RED;
+			default:
+				diffText.color = FlxColor.WHITE;
 		}
 	}
 
@@ -538,7 +560,17 @@ class FreeplayState extends MusicBeatState {
 
 			FlxTween.color(bg, 0.2, bg.color, FlxColor.fromString(songs[curSelected].freeplayColor));
 		}
+		CoolUtil.setDifficultyList(songs[curSelected].songName);
+		if (CoolUtil.difficultyArray.length < prevDiffList.length || !CoolUtil.difficultyArray.contains(diffText.text)) {
+			changeDiff(CoolUtil.difficultyArray.length - 1, true);
+		}
+
+		changeDiff();
+		
+		prevDiffList = CoolUtil.difficultyArray;
 	}
+
+	var prevDiffList:Array<String> = [];
 
 	var doubleSpace:Int;
 
@@ -551,6 +583,8 @@ class FreeplayState extends MusicBeatState {
 	var weekModsFolderContent:Array<String>;
 
 	var songModsFolderContent:Array<String>;
+
+	public static var inSubState:Bool = false;
 }
 
 class SongMetadata {
@@ -564,5 +598,155 @@ class SongMetadata {
 		this.week = week;
 		this.songCharacter = songCharacter;
 		this.freeplayColor = freeplayColor;
+	}
+}
+
+class ModifierSubState extends FlxSubState {
+	var modifierItems:FlxTypedSpriteGroup<ModifierImage> = new FlxTypedSpriteGroup<ModifierImage>();
+	var curModifier:Int = 0;
+	var title:FlxText = new FlxText(0, 0, 0, "", 20);
+	var desc:FlxText = new FlxText(0, 0, 0, "", 26);
+	var multInfo:FlxText = new FlxText(0, 0, 0, "", 24);
+	override public function create() {
+		super.create();
+
+		FreeplayState.inSubState = true;
+
+		var bg = new FlxSprite();
+		bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
+
+		var nightcore = new ModifierImage();
+		nightcore.loadGraphic(Paths.image("modifiers/nightcore"));
+		nightcore.setGraphicSize(80, 80);
+		nightcore.updateHitbox();
+		nightcore.name = Modifiers.NIGHTCORE;
+		nightcore.ID = 0;
+		if (!FreeplayState.modifiers.contains(nightcore.name))
+			nightcore.setColorTransform(0.3, 0.3, 0.3);
+
+		var fullCombo = new ModifierImage(nightcore.x + nightcore.width + 20);
+		fullCombo.loadGraphic(Paths.image("modifiers/full-combo"));
+		fullCombo.setGraphicSize(80, 80);
+		fullCombo.updateHitbox();
+		fullCombo.name = Modifiers.FULLCOMBO;
+		fullCombo.ID = 1;
+		if (!FreeplayState.modifiers.contains(fullCombo.name))
+			fullCombo.setColorTransform(0.3, 0.3, 0.3);
+
+		modifierItems.add(nightcore);
+		modifierItems.add(fullCombo);
+		modifierItems.screenCenter();
+
+		add(modifierItems);
+
+		title.setFormat("VCR OSD Mono", title.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		desc.setFormat("VCR OSD Mono", desc.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		multInfo.setFormat("VCR OSD Mono", multInfo.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		
+		add(title);
+		add(desc);
+		add(multInfo);
+	}
+
+	override public function update(elapsed:Float) {
+		super.update(elapsed);
+
+		if (Controls.check(UI_LEFT))
+			curModifier--;
+		if (Controls.check(UI_RIGHT))
+			curModifier++;
+
+		if (curModifier > modifierItems.length - 1) {
+			curModifier = 0;
+		}
+		if (curModifier < 0) {
+			curModifier = modifierItems.length - 1;
+		}
+
+		for (item in modifierItems) {
+			if (FreeplayState.modifiers.contains(item.name))
+				item.setColorTransform(1, 1, 1);
+			else
+				item.setColorTransform(0.3, 0.3, 0.3);
+			item.alpha = 0.8;
+			if (item.ID == curModifier) {
+				item.alpha = 1;
+				if (Controls.check(ACCEPT)) {
+					if (FreeplayState.modifiers.contains(item.name)) {
+						FreeplayState.modifiers.remove(item.name);
+					}
+					else {
+						FreeplayState.modifiers.push(item.name);
+					}
+				}
+
+				title.text = Modifiers.getTitle(item.name);
+				desc.text = Modifiers.getDescription(item.name);
+				title.screenCenter();
+				title.y -= 200;
+				desc.screenCenter(X);
+				desc.y = title.y + title.height + 10;
+
+				multInfo.screenCenter(X);
+				multInfo.y = 25;
+				var multi = Modifiers.calculateMultiplier();
+				multInfo.text = "Score Multiplier: " + multi + "x";
+				if (multi > 1)
+					multInfo.color = FlxColor.LIME;
+				else if (multi < 1)
+					multInfo.color = FlxColor.RED;
+				else
+					multInfo.color = FlxColor.WHITE;
+			}
+		}
+
+		if (FlxG.keys.justPressed.SHIFT || Controls.check(BACK)) {
+			FreeplayState.inSubState = false;
+			close();
+		}
+	}
+}
+
+class ModifierImage extends FlxSprite {
+	public var name:Modifiers;
+}
+
+@:enum
+abstract Modifiers(String) {
+	var NIGHTCORE = "nc";
+	var FULLCOMBO = "fc";
+
+	public static function getTitle(mod:Modifiers):String {
+		switch(mod) {
+			case NIGHTCORE:
+				return "Nightcore";
+			case FULLCOMBO:
+				return "Full Combo";
+		}
+	}
+
+	public static function getDescription(mod:Modifiers):String {
+		switch (mod) {
+			case NIGHTCORE:
+				return "Pitches up the song.";
+			case FULLCOMBO:
+				return "No more Skill Issues";
+		}
+	}
+
+
+	public static function calculateMultiplier():Float {
+		var mult = 1.0;
+		for (s in FreeplayState.modifiers) {
+			switch (s) {
+				case NIGHTCORE:
+					mult += 0.5;
+				case FULLCOMBO:
+					mult += 0.0;
+			}
+		}
+		return mult;
 	}
 }
