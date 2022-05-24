@@ -42,7 +42,7 @@ Also the source code for update unzipper is [here](https://github.com/Paidyy/Fun
 - [Paidyy](https://paidyy.newgrounds.com/) - PEngine Programmer
 ### Special Thanks
 - [PolybiusProxy](https://github.com/brightfyregit/Friday-Night-Funkin-Mp4-Video-Support) - Video Loader for Flixel
-- [gedehari and Shadow Mario](https://github.com/ShadowMario/FNF-PsychEngine/blob/main/source/editors/ChartingState.hx) - Waveform for Flixel
+- [gedehari and Shadow Mario](https://github.com/ShadowMario/FNF-PsychEngine/blob/f4cf818dac20859fd0223206609ba91b6818831f/source/editors/ChartingState.hx#L2022) - Waveform for Flixel
 ### Friday Night Funkin'
 - [ninjamuffin99](https://twitter.com/ninja_muffin99) - Programmer
 - [PhantomArcade3K](https://twitter.com/phantomarcade3k) and [Evilsk8r](https://twitter.com/evilsk8r) - Artists
