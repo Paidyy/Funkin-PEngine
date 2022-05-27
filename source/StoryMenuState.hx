@@ -122,7 +122,7 @@ class StoryMenuState extends MusicBeatState {
 		weeks.push(new Week('week4', ['Satin-Panties', "High", "Milf"], ['mom', 'bf', 'gf'], "MOMMY MUST MURDER", new UnlockedAfterMap("week3")));
 		weeks.push(new Week('week5', ['Cocoa', 'Eggnog', 'Winter-Horrorland'], ['parents-christmas', 'bf', 'gf'], "RED SNOW", new UnlockedAfterMap("week4")));
 		weeks.push(new Week('week6', ['Senpai', 'Roses', 'Thorns'], ['senpai', 'bf', 'gf'], "hating simulator ft. moawling", new UnlockedAfterMap("week5")));
-		//weeks.push(new Week('week7', ['Ugh', 'Guns', 'Stress'], ['tankman', 'bf', 'gf'], "Tankman", new UnlockedAfterMap("week6")));
+		weeks.push(new Week('week7', ['Ugh', 'Guns', 'Stress'], ['tankman', 'bf', 'gf'], "Tankman", new UnlockedAfterMap("week6")));
 
 		var pengine_weeks_path = ${Paths.modsLoc} + "/weeks/";
 		for (file in FileSystem.readDirectory(pengine_weeks_path)) {
@@ -505,6 +505,10 @@ class StoryMenuState extends MusicBeatState {
 			case "pico":
 				grpWeekCharacters.members[0].offset.set(150, 50);
 				grpWeekCharacters.members[0].scale.set(0.6, 0.6);
+
+			case "tankman":
+				grpWeekCharacters.members[0].offset.set(70, -30);
+				grpWeekCharacters.members[0].scale.set(1.2, 1.2);
 
 			default:
 				grpWeekCharacters.members[0].offset.set(100, 100);
