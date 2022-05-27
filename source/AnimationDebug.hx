@@ -121,7 +121,8 @@ class AnimationDebug extends FlxState {
 			+ "QE - Decrease / Increase the camera zoom\n"
 			+ "CTRL + S - Save the Config\n"
 			+ "R - To reload the Character Config\n"
-			+ "C - To change the Character\n";
+			+ "C - To change the Character\n"
+			+ "+- - Change frame\n";
 		// flx text is bugged with \n
 		info.scrollFactor.set();
 		info.y = (FlxG.height - info.height) + (info.size * 2);
@@ -161,7 +162,9 @@ class AnimationDebug extends FlxState {
 	}
 
 	override function update(elapsed:Float) {
-		textAnim.text = char.animation.curAnim.name;
+		textAnim.text = char.animation.curAnim.name + "\n" + 
+		"Indice/Frame: " + char.animation.curAnim.curFrame + "/" + (char.animation.curAnim.numFrames - 1)
+		+ "\n";
 		for (text in dumbTexts) {
 			if (text.text.split(" ")[0] == char.animation.curAnim.name) {
 				text.color = FlxColor.YELLOW;
@@ -169,6 +172,16 @@ class AnimationDebug extends FlxState {
 			else {
 				text.color = FlxColor.BLUE;
 			}
+		}
+
+		if (FlxG.keys.justPressed.MINUS) {
+			char.animation.curAnim.pause();
+			char.animation.curAnim.curFrame--;
+		}
+
+		if (FlxG.keys.justPressed.PLUS) {
+			char.animation.curAnim.pause();
+			char.animation.curAnim.curFrame++;
 		}
 
 		if (FlxG.keys.justPressed.E)
