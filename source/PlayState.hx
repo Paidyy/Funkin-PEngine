@@ -1340,7 +1340,7 @@ class PlayState extends MusicBeatState {
 				customSong = true;
 			}
 		FlxG.sound.music.looped = false;
-		FlxG.sound.music.autoDestroy = true;
+		//FlxG.sound.music.autoDestroy = true;
 		FlxG.sound.music.onComplete = function name() {trace("song onComplete()"); songStatus = 2;};
 		vocals.play();
 
@@ -2147,16 +2147,19 @@ class PlayState extends MusicBeatState {
 
 	override public function update(elapsed:Float) {
 		vocals.active = FlxG.sound.music.active;
-		if (timeLeftText.text == "0:00" && songStatus == 1) {
-			songStatus = 2;
-		}
-		if (FlxG.sound.music.time > 0) {
-			songStatus = 1;
-		}
 		songPercent = FlxMath.roundDecimal(FlxG.sound.music.time / FlxG.sound.music.length, 4) * 100;
-		if (songPercent >= 100) {
-			songStatus = 2;
+		if (songStatus != 2) {
+			if (FlxG.sound.music.length - FlxG.sound.music.time <= 100 && songStatus == 1) {
+				songStatus = 2;
+			}
+			if (FlxG.sound.music.time > 0) {
+				songStatus = 1;
+			}
+			if (songPercent >= 100) {
+				songStatus = 2;
+			}
 		}
+
 		if (isMultiplayer) {
 			if (Lobby.isHost) {
 				if (songScore > Lobby.player2.score) {
@@ -2848,10 +2851,12 @@ class PlayState extends MusicBeatState {
 
 	function luaClose() {
 		#if windows
-		if (luas != null) {
+		if (luas != null || luas.length <= 0) {
 			for (lua in luas) {
-				lua.close();
-				luas.remove(lua);
+				if (lua != null) {
+					lua.close();
+					luas.remove(lua);
+				}
 			}
 		}
 		#end
@@ -4475,9 +4480,11 @@ class PlayState extends MusicBeatState {
 
 	function luaCall(func, ?args:Array<Dynamic>) {
 		#if windows
-		if (luas != null)
+		if (luas != null || luas.length <= 0)
 			for (lua in luas) {
-				lua.call(func, args);
+				if (lua != null) {
+					lua.call(func, args);
+				}
 			}
 		#end
 	}
