@@ -199,12 +199,12 @@ class PlayState extends MusicBeatState {
 
 	public static var gfVersion:String;
 
-	var timeLeftText:FlxText;
+	public var timeLeftText:FlxText;
 
 	#if windows
-	var lua:LuaShit;
+	var luas:Array<LuaShit> = [];
 	#else
-	var lua(null, null):Dynamic = null;
+	var luas(null, null):Dynamic = null;
 	#end
 
 	public static var week:Week;
@@ -250,8 +250,23 @@ class PlayState extends MusicBeatState {
 	public function new(?isMultiplayer = false, ?songPosition:Float) {
 		super();
 		luaSprites = new Map<String, FlxSprite>();
-		playAs = SONG.playAs;
-		if (playAs == null) playAs = "bf";
+		if (SONG == null) {
+			SONG = {
+				song: 'Test',
+				bpm: 150,
+				speed: 1,
+				whichK: 4,
+				player1: 'bf',
+				player2: 'dad',
+				stage: "stage",
+				playAs: "bf",
+				needsVoices: true,
+				validScore: false,
+				swapBfGui: false,
+				notes: []
+			};
+		}
+		if (SONG.playAs == null) playAs = "bf";
 		if (isMultiplayer == null) isMultiplayer = false;
 		this.isMultiplayer = isMultiplayer;
 		if (songPosition != null) {
@@ -657,11 +672,6 @@ class PlayState extends MusicBeatState {
 			case 'limo':
 				resetFastCar();
 				add(stage.fastCar);
-			case 'tank':
-				if (gfVersion == "pico-speaker") {
-					gf.x = 300;
-					gf.y = -50;
-				}
 		}
 		
 		add(gfLayer);
@@ -679,15 +689,6 @@ class PlayState extends MusicBeatState {
 		catch (exc) {
 			trace("Failed to load stage (front layer):" + tempStageName);
 			new Notification("Failed to load stage (front layer):" + tempStageName).show();
-		}
-
-		if (stage.name == 'tank') {
-			add(stage.bgTank0);
-			add(stage.bgTank1);
-			add(stage.bgTank2);
-			add(stage.bgTank3);
-			add(stage.bgTank4);
-			add(stage.bgTank5); 
 		}
 
 		bgDimness = new FlxSprite().makeGraphic(FlxG.width + 1000, FlxG.height + 1000, FlxColor.BLACK);
@@ -757,8 +758,8 @@ class PlayState extends MusicBeatState {
 			timeLeftText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.fromString("#404047"), 3);
 		}
 		else {
-			timeLeftText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE);
-			timeLeftText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 3);
+			timeLeftText.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE);
+			timeLeftText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
 		}
 		timeLeftText.antialiasing = true;
 		timeLeftText.screenCenter(X);
@@ -833,14 +834,14 @@ class PlayState extends MusicBeatState {
 		}
 
 		if (!isScoreTxtAlphabet) {
-			scoreTxtFlx = new FlxText(0, FlxG.height * 0.9 + 40, 0, "", 22);
+			scoreTxtFlx = new FlxText(0, FlxG.height * 0.9 + 40, 0, "", 20);
 			if (stage.name.startsWith('school')) {
 				scoreTxtFlx.setFormat(Paths.font("pixel.otf"), scoreTxtFlx.size - 6, FlxColor.WHITE);
 				scoreTxtFlx.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.fromString("#404047"), 3);
 			}
 			else {
 				scoreTxtFlx.setFormat(Paths.font("vcr.ttf"), scoreTxtFlx.size, FlxColor.WHITE);
-				scoreTxtFlx.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
+				scoreTxtFlx.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5);
 			}
 			scoreTxtFlx.antialiasing = true;
 			scoreTxtFlx.scrollFactor.set();
@@ -978,11 +979,13 @@ class PlayState extends MusicBeatState {
 
 		#if windows
 		if (FileSystem.exists(Paths.getLuaPath(curSong.toLowerCase()))) {
-			lua = new LuaShit(Paths.getLuaPath(curSong.toLowerCase()));
+			luas.push(new LuaShit(Paths.getLuaPath(curSong.toLowerCase())));
 			
 			luaSetVariable("curDifficulty", storyDifficulty);
 			luaSetVariable("stageZoom", this.stage.camZoom);
 		}
+		if (stage.lua != null)
+			luas.push(stage.lua);
 		#end
 
 		super.create();
@@ -1978,9 +1981,10 @@ class PlayState extends MusicBeatState {
 		FlxTween.num(camFollow.y, x, (Conductor.stepCrochet * 16 / 1000), null, f -> camFollow.x = f);
 		FlxTween.num(camFollow.y, y, (Conductor.stepCrochet * 16 / 1000), null, f -> camFollow.y = f);
 	}
-
+	
 	function spawnRollingTankmen() {
 		if (!isTankRolling) {
+			if (stage.tankRolling == null) stage.tankRolling = stage.assetMap.get("tankRolling");
 			stage.tankRolling.revive();
 			isTankRolling = true;
 			stage.tankRolling.x = -390;
@@ -2219,10 +2223,6 @@ class PlayState extends MusicBeatState {
 		}
 		#end
 
-		if (godMode == true) {
-			health = 1.0;
-		}
-
 		if (FlxG.keys.justPressed.NINE) {
 			if (iconP1.actualChar == 'bf-old')
 				iconP1.setChar(SONG.player1, PlayState.SONG.swapBfGui ? false : true);
@@ -2245,13 +2245,6 @@ class PlayState extends MusicBeatState {
 
 		if (!paused) {
 			pauseBG.visible = false;
-		}
-
-		if (FlxG.keys.pressed.UP) {
-			songPitch += 0.001;
-		}
-		if (FlxG.keys.pressed.DOWN) {
-			songPitch -= 0.001;
 		}
 
 		//update the song pitch
@@ -2548,7 +2541,7 @@ class PlayState extends MusicBeatState {
 		}
 		*/
 
-		if (health <= 0 && !isMultiplayer && !selectedSongPosition) {
+		if (health <= 0 && !isMultiplayer && !selectedSongPosition && !godMode && !FreeplayState.modifiers.contains(NOFAIL)) {
 			if (playAs == "bf") {
 				bf.stunned = true;
 			}
@@ -2683,14 +2676,6 @@ class PlayState extends MusicBeatState {
 						dad.playAnim(getAnimName(Std.int(Math.abs(daNote.noteData)), false, altAnim), true);
 					}
 
-					if (dad.curCharacter == "tankman") {
-						if (curSong == "Ugh") {
-							if (curStep == 60 || curStep == 444 || curStep == 524 || curStep == 828) {
-								dad.playAnim("ugh");
-							}
-						}
-					}
-
 					dad.holdTimer = 0;
 
 					if (SONG.needsVoices)
@@ -2797,8 +2782,11 @@ class PlayState extends MusicBeatState {
 					removeNote(daNote);
 				}
 
-				if (daNote.wasGoodHitButt && SONG.song == "Stress") {
-					peecoStressOnArrowShoot(daNote);
+				
+
+				if (daNote.wasGoodHitButt) {
+					luaCall("onNoteInStrumLine", [daNote.toArray()]);
+					//peecoStressOnArrowShoot(daNote);
 				}
 			});
 		}
@@ -2853,11 +2841,18 @@ class PlayState extends MusicBeatState {
 		}
 		// Timer.delay(sub.destroy, 5 * 1000);
 	}
+	
+	public function spawnRunningTankman() {
+		stage.tankmanWalking.add(new TankmanRun());
+	}
 
 	function luaClose() {
 		#if windows
-		if (lua != null) {
-			lua.close();
+		if (luas != null) {
+			for (lua in luas) {
+				lua.close();
+				luas.remove(lua);
+			}
 		}
 		#end
 	}
@@ -2939,10 +2934,13 @@ class PlayState extends MusicBeatState {
 				FlxTransitionableState.skipNextTransOut = true;
 				prevCamFollow = camFollow;
 
-				if (!CoolUtil.isCustomWeek(storyWeek))
-					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + dataFileDifficulty, PlayState.storyPlaylist[0]);
-				else
+				if (FileSystem.exists(Paths.instNoLib(PlayState.storyPlaylist[0].toLowerCase()))) {
+					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + dataFileDifficulty, PlayState.storyPlaylist[0].toLowerCase());
+				}
+				else {
+					customSong = true;
 					PlayState.SONG = Song.PEloadFromJson(PlayState.storyPlaylist[0].toLowerCase() + dataFileDifficulty, PlayState.storyPlaylist[0].toLowerCase());
+				}
 				PlayState.SONGglobalNotes = Song.parseGlobalNotesJSONshit(PlayState.storyPlaylist[0].toLowerCase());
 				FlxG.sound.music.stop();
 
@@ -3112,10 +3110,6 @@ class PlayState extends MusicBeatState {
 			
 			var score:Float = 50;
 			var daRating:String = "shit";
-
-			if (SONG.song == "Stress") {
-				peecoStressOnArrowShoot(daNote);
-			}
 
 			/*
 			if (noteDiff > (curSpeed * 200)) {
@@ -4223,14 +4217,17 @@ class PlayState extends MusicBeatState {
 		gf.playAnim('scared', true);
 	}
 
+	/*
 	function peecoStressOnArrowShoot(note:Note) {
 		if (gf.curCharacter == "pico-speaker")
 			if (curBeat >= 0 && curBeat <= 31 ||
 				curBeat >= 96 && curBeat <= 191 ||
 				curBeat >= 288 && curBeat <= 316) {
 				gf.playAnim("picoShoot" + (note.noteData + 1));
+				gf.idleAnim = "picoIdle" + new FlxRandom().int(1, 2);
 			}
 	}
+	*/
 
 	override function stepHit() {
 		luaCall("stepHit");
@@ -4240,34 +4237,6 @@ class PlayState extends MusicBeatState {
 		// on some songs vocals resync infinitely lol, god please help me i dont fucking know how to fix this
 		if (FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20) {
 			resyncVocals();
-		}
-
-		if (curSong == "Stress") {
-			if (curStep == 736) {
-				dad.playAnim("prettyGood");
-			}
-			if (curBeat >= 347) {
-				switch (curStep) {
-					//kinda need to make it faster
-					case 1408: gf.playAnim("picoShoot2");
-					case 1410: gf.playAnim("picoShoot3");
-					case 1412: gf.playAnim("picoShoot1");
-					case 1414: gf.playAnim("picoShoot1");
-					case 1416: gf.playAnim("picoShoot3");
-					case 1418: gf.playAnim("picoShoot4");
-					case 1420: gf.playAnim("picoShoot2");
-					case 1422: gf.playAnim("picoShoot1");
-	
-					case 1424: gf.playAnim("picoShoot1");
-					case 1426: gf.playAnim("picoShoot4");
-					case 1428: gf.playAnim("picoShoot3");
-					case 1430: gf.playAnim("picoShoot4");
-					case 1432: gf.playAnim("picoShoot2");
-					case 1434: gf.playAnim("picoShoot4");
-					case 1436: gf.playAnim("picoShoot1");
-					case 1438: gf.playAnim("picoShoot4");
-				}
-			}
 		}
 
 		if (dad.curCharacter == 'spooky' && curStep % 4 == 2) {
@@ -4376,6 +4345,7 @@ class PlayState extends MusicBeatState {
 					trainStart();
 				}
 			case 'tank':
+				/*
 				stage.bgSkittles.animation.play('bop', true);
 				stage.bgTank0.animation.play('bop', true);
 				stage.bgTank1.animation.play('bop', true);
@@ -4383,6 +4353,7 @@ class PlayState extends MusicBeatState {
 				stage.bgTank3.animation.play('bop', true);
 				stage.bgTank4.animation.play('bop', true);
 				stage.bgTank5.animation.play('bop', true);
+				*/
 		}
 
 		if (stage.name == "spooky" && FlxG.random.bool(10) && curBeat > lightningStrikeBeat + lightningOffset) {
@@ -4504,15 +4475,19 @@ class PlayState extends MusicBeatState {
 
 	function luaCall(func, ?args:Array<Dynamic>) {
 		#if windows
-		if (lua != null)
-			lua.call(func, args);
+		if (luas != null)
+			for (lua in luas) {
+				lua.call(func, args);
+			}
 		#end
 	}
 
 	function luaSetVariable(name:String, value:Dynamic) {
 		#if windows
-		if (lua != null)
-			lua.setVariable(name, value);
+		if (luas != null)
+			for (lua in luas) {
+				lua.setVariable(name, value);
+			}
 		#end
 	}
 
