@@ -337,11 +337,14 @@ class TitleState extends MusicBeatState {
 		FlxG.autoPause = false;
 	}
 
+	var begS = 1.2;
+
 	function createCoolText(textArray:Array<String>) {
 		for (i in 0...textArray.length) {
 			var money:Alphabet = new Alphabet(0, 0, textArray[i], true, false);
 			money.screenCenter(X);
 			money.y += (i * 60) + 200;
+			FlxTween.num(begS, 1, 0.04, null, f -> money.scale.set(f, f));
 			credGroup.add(money);
 			textGroup.add(money);
 		}
@@ -351,6 +354,7 @@ class TitleState extends MusicBeatState {
 		var coolText:Alphabet = new Alphabet(0, 0, text, true, false);
 		coolText.screenCenter(X);
 		coolText.y += (textGroup.length * 60) + 200 + Yoffset;
+		FlxTween.num(begS, 1, 0.04, null, f -> coolText.scale.set(f, f));
 		credGroup.add(coolText);
 		textGroup.add(coolText);
 	}
