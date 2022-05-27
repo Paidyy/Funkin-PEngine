@@ -1,5 +1,6 @@
 package;
 
+import flixel.group.FlxSpriteGroup;
 import flixel.FlxBasic;
 import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.util.FlxColor;
@@ -19,7 +20,6 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxSprite;
 
 class Stage extends FlxTypedGroup<Dynamic> {
-
     public static var stagesList = [
         "stage",
         "spooky",
@@ -28,13 +28,19 @@ class Stage extends FlxTypedGroup<Dynamic> {
         "mall",
         "mallEvil",
         "school",
-        "schoolEvil"
+        "schoolEvil",
+        "tank"
     ];
+
+    public var assetMap:Map<String, StageAsset> = new Map<String, StageAsset>();
+
     public var name:String = "stage";
     public var camZoom:Float = 0.9;
 
 	public var config:AnyObjectMap = new AnyObjectMap();
 	public var configPath:String = null;
+
+	public var lua:LuaShit = null;
 
 	public var bfScrollFactorX:Float = 1;
 	public var dadScrollFactorX:Float = 1;
@@ -74,14 +80,19 @@ class Stage extends FlxTypedGroup<Dynamic> {
 
     public var tankRolling:StageAsset;
 
+	public var tankmanWalking:FlxSpriteGroup;
+
+	/*
 	public var bgTank0:StageAsset;
 	public var bgTank1:StageAsset;
 	public var bgTank2:StageAsset;
 	public var bgTank3:StageAsset;
 	public var bgTank4:StageAsset;
 	public var bgTank5:StageAsset;
+    */
 
     public function applyStageShitToPlayState() {
+		lua = FileSystem.exists('assets/stages/$name/script.lua') ? new LuaShit('assets/stages/$name/script.lua') : new LuaShit('${Paths.modsLoc}/stages/$name/script.lua');
         PlayState.camZoom = camZoom;
 		if (PlayState.currentPlaystate.scoreTxtFlx != null) {
 			if (name.startsWith('school')) {
@@ -592,6 +603,10 @@ class Stage extends FlxTypedGroup<Dynamic> {
 							if (keys.get("scrollFactorY") != null)
 								stageSprite.scrollFactor.y = keys.get("scrollFactorY");
 						}
+                        if (image == "tankGround") {
+						    tankmanWalking = new FlxSpriteGroup();
+							add(tankmanWalking);
+                        }
 						add(stageSprite);
 					}
                 }
@@ -606,6 +621,9 @@ class Stage extends FlxTypedGroup<Dynamic> {
      * @param obj The Asset
      */
     override public function add(obj:Dynamic):Dynamic {
+        if (obj is StageAsset) {
+			assetMap.set(obj.name, obj);
+        }
         if (obj.layer != null) {
 			if (obj.layer == 0) {
 				return super.add(obj);
