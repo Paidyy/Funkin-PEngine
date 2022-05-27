@@ -1,0 +1,17 @@
+animations:
+ firstDeath:
+  name: BF Dies with GF
+  x: 37
+  y: 11
+  isIdle: true
+ deathLoop:
+  name: BF Dead with GF Loop
+  looped: true
+  x: 37
+  y: -6
+ deathConfirm:
+  name: RETRY confirm holding gf
+  x: 37
+  y: 25
+
+flipX: true

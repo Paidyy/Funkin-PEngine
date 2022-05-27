@@ -1,0 +1,41 @@
+Y: -40
+
+animations:
+ idle:
+  name: BF idle dance w gf0
+ singUP:
+  name: BF NOTE UP0
+  x: -30
+  y: 11
+ singLEFT:
+  name: BF NOTE LEFT0
+  x: 16
+  y: 2
+ singRIGHT:
+  name: BF NOTE RIGHT0
+  x: -40
+  y: 20
+ singDOWN:
+  name: BF NOTE DOWN0
+  x: -11
+  y: -13
+ singUPmiss:
+  name: BF NOTE UP MISS0
+  x: -30
+  y: 8
+ singLEFTmiss:
+  name: BF NOTE LEFT MISS0
+  x: 6
+  y: 5
+ singRIGHTmiss:
+  name: BF NOTE RIGHT MISS0
+  x: -40
+  y: 34
+ singDOWNmiss:
+  name: BF NOTE DOWN MISS0
+  x: -10
+  y: -10
+ bfCatch:
+  name: BF catches GF
+
+flipX: true

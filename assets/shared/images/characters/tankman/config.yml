@@ -1,0 +1,25 @@
+animations:
+ idle:
+  name: Tankman Idle Dance instance 1
+ singUP:
+  name: Tankman UP note instance 1
+  x: 50
+  y: 50
+ singRIGHT:
+  name: Tankman Note Left instance 1
+  x: 20
+  y: -30
+ singLEFT:
+  name: Tankman Right Note instance 1
+  x: 70
+  y: -10
+ singDOWN:
+  name: Tankman DOWN note instance 1
+  x: 70
+  y: -100
+ ugh:
+  name: TANKMAN UGH instance 1
+ prettyGood:
+  name: PRETTY GOOD tankman instance 1
+
+flipX: true

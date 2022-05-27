@@ -1,0 +1,111 @@
+zoom: 0.95
+images:
+ tankSky:
+  x: -532
+  y: -399
+  size: 1.3
+  layer: 0
+ tankMountains:
+  x: -311
+  y: 80
+  scrollFactorX: 0.4
+  scrollFactorY: 0.9
+  size: 1.3
+  layer: 0
+ tankBuildings:
+  x: -314
+  y: 15
+  scrollFactorX: 0.4
+  scrollFactorY: 0.9
+  size: 1.23
+  layer: 0
+ tankRuins:
+  x: -216
+  y: 64
+  scrollFactorX: 0.45
+  scrollFactorY: 0.9
+  size: 1.15
+  layer: 0
+ tankWatchtower:
+  scrollFactorX: 0.5
+  scrollFactorY: 0.75
+  x: 0
+  y: 0
+  size: 1
+  layer: 0
+ smokeLeft:
+  x: -200
+  y: -130
+  scrollFactorX: 0.4
+  scrollFactorY: 0.4
+  size: 1
+  layer: 0
+ smokeRight:
+  x: 1200
+  scrollFactorX: 0.4
+  scrollFactorY: 0.4
+  y: 0
+  size: 1
+  layer: 0
+ tankRolling:
+  scrollFactorX: 0.8
+  scrollFactorY: 0.8
+  x: 0
+  y: 0
+  size: 1
+  layer: 0
+ tankGround:
+  x: -313
+  y: -105
+  scrollFactorX: 0.9
+  scrollFactorY: 0.9
+  size: 1
+  layer: 0
+ tank0:
+  x: -300
+  y: 470
+  scrollFactorX: 1.1
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+ tank1:
+  x: -30
+  y: 840
+  scrollFactorX: 1.6
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+ tank2:
+  x: 440
+  y: 780
+  scrollFactorX: 2
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+ tank3:
+  x: 890
+  y: 830
+  scrollFactorX: 2.6
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+ tank4:
+  x: 1250
+  y: 760
+  scrollFactorX: 1.6
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+ tank5:
+  x: 1450
+  y: 460
+  scrollFactorX: 1.1
+  scrollFactorY: 1
+  layer: 1
+  size: 1
+gfX: 190
+gfY: 50
+dadY: 280
+bfX: 705
+bfY: 436
+dadX: 100
