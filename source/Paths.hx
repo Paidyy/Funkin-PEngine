@@ -331,12 +331,12 @@ class Paths {
 		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
 	}
 
-	inline static public function weekimage(key:String, week:Int, ?library:String) {
-		return getPath('week$week/images/$key.png', IMAGE, library);
+	inline static public function weekimage(key:String, week:Int) {
+		return getPath('images/$key.png', IMAGE, 'week$week');
 	}
 
-	inline static public function getWeekSparrowAtlas(key:String, week:Int, ?library:String) {
-		return FlxAtlasFrames.fromSparrow(weekimage(key, week, library), file('week$week/images/$key.xml', library));
+	inline static public function getWeekSparrowAtlas(key:String, week:Int) {
+		return FlxAtlasFrames.fromSparrow(weekimage(key, week), file('images/$key.xml', 'week$week'));
 	}
 
 	inline static public function getPackerAtlas(key:String, ?library:String) {
