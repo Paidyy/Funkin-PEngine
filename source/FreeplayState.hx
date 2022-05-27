@@ -104,19 +104,15 @@ class FreeplayState extends MusicBeatState {
 
 			if (StoryMenuState.isWeekUnlocked("week5") || isDebug)
 				addWeek(['Senpai', 'Roses', 'Thorns'], "week6", ['senpai', 'senpai', 'spirit'], "#f593de");
+
+			if (StoryMenuState.isWeekUnlocked("week6") || isDebug)
+				addWeek(['Ugh', 'Guns', 'Stress'], "week7", ['tankman'], "#ffb029");
 		}
 		else {
 			//put erect songs here
 		}
 
-		/*
-		if (StoryMenuState.isWeekUnlocked("week6") || isDebug)
-			addWeek(['Ugh', 'Guns', 'Stress'], "week7", ['tankman'], "#ffb029");
-		*/
-
 		var otherSongsAdded = [];
-
-		
 
 		var pengine_weeks_path = ${Paths.modsLoc} + "/weeks/";
 		weekModsFolderContent = FileSystem.readDirectory(pengine_weeks_path);
@@ -210,21 +206,21 @@ class FreeplayState extends MusicBeatState {
 			// songText.screenCenter(X);
 		}
 
-		scoreText = new FlxText(FlxG.width * 0.7 - 20, 5, 0, "", 32);
+		scoreText = new FlxText(FlxG.width * 0.7 - 20, 5, 0, "", 30);
 		// scoreText.autoSize = false;
-		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
+		scoreText.setFormat(Paths.font("vcr.ttf"), scoreText.size, FlxColor.WHITE, RIGHT);
 		// scoreText.alignment = RIGHT;
 
 		var scoreBG:FlxSprite = new FlxSprite(scoreText.x - 6, 0).makeGraphic(Std.int(FlxG.width * 0.35), 66, 0xFF000000);
 		scoreBG.alpha = 0.6;
 
-		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
+		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 25);
 		diffText.font = scoreText.font;
 
-		var downBarText:FlxText = new FlxText(0, 0, 0, "", 18);
+		var downBarText:FlxText = new FlxText(0, 0, 0, "", 20);
 		downBarText.setFormat(Paths.font("vcr.ttf"), downBarText.size, FlxColor.WHITE);
-		downBarText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2);
-		downBarText.text = "SPACE - Listen to song     R - Select Random Song     SHIFT - Open Gameplay Modifier" + (erectSongExists ?  "     E - Toggle Erect Mode" : "");
+		downBarText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5);
+		downBarText.text = "SPACE - Listen to song   R - Select Random Song   SHIFT - Open Gameplay Modifier" + (erectSongExists ?  "   E - Toggle Erect Mode" : "");
 		downBarText.screenCenter(X);
 
 		var downBarBG:FlxSprite = new FlxSprite(0, FlxG.height - downBarText.height - 5).makeGraphic(FlxG.width, Std.int(downBarText.height) + 6, 0xFF000000);
@@ -443,7 +439,9 @@ class FreeplayState extends MusicBeatState {
 				curDifficulty = 1;
 			case "hard":
 				curDifficulty = 2;
-			}
+			default:
+				curDifficulty = 1;
+		}
 		var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 
 		var customSong = false;
@@ -493,6 +491,7 @@ class FreeplayState extends MusicBeatState {
 
 		if (curDifficulty < 0)
 			curDifficulty = CoolUtil.difficultyArray.length - 1;
+
 		if (curDifficulty > CoolUtil.difficultyArray.length - 1)
 			curDifficulty = 0;
 
@@ -561,11 +560,16 @@ class FreeplayState extends MusicBeatState {
 			FlxTween.color(bg, 0.2, bg.color, FlxColor.fromString(songs[curSelected].freeplayColor));
 		}
 		CoolUtil.setDifficultyList(songs[curSelected].songName);
-		if (CoolUtil.difficultyArray.length < prevDiffList.length || !CoolUtil.difficultyArray.contains(diffText.text)) {
-			changeDiff(CoolUtil.difficultyArray.length - 1, true);
+		// if (CoolUtil.difficultyArray.length < prevDiffList.length || !CoolUtil.difficultyArray.contains(diffText.text)) {
+		if (CoolUtil.difficultyArray.indexOf(diffText.text) == -1) {
+			changeDiff(CoolUtil.difficultyArray.indexOf("NORMAL"), true);
 		}
 
 		changeDiff();
+
+		if (CoolUtil.difficultyArray.length != prevDiffList.length) {
+			changeDiff(CoolUtil.difficultyArray.indexOf("NORMAL"), true);
+		}
 		
 		prevDiffList = CoolUtil.difficultyArray;
 	}
@@ -635,8 +639,18 @@ class ModifierSubState extends FlxSubState {
 		if (!FreeplayState.modifiers.contains(fullCombo.name))
 			fullCombo.setColorTransform(0.3, 0.3, 0.3);
 
+		var noFail = new ModifierImage(fullCombo.x + fullCombo.width + 20);
+		noFail.loadGraphic(Paths.image("modifiers/no-fail"));
+		noFail.setGraphicSize(80, 80);
+		noFail.updateHitbox();
+		noFail.name = Modifiers.NOFAIL;
+		noFail.ID = 2;
+		if (!FreeplayState.modifiers.contains(noFail.name))
+			noFail.setColorTransform(0.3, 0.3, 0.3);
+
 		modifierItems.add(nightcore);
 		modifierItems.add(fullCombo);
+		modifierItems.add(noFail);
 		modifierItems.screenCenter();
 
 		add(modifierItems);
@@ -717,6 +731,7 @@ class ModifierImage extends FlxSprite {
 abstract Modifiers(String) {
 	var NIGHTCORE = "nc";
 	var FULLCOMBO = "fc";
+	var NOFAIL = "nf";
 
 	public static function getTitle(mod:Modifiers):String {
 		switch(mod) {
@@ -724,6 +739,8 @@ abstract Modifiers(String) {
 				return "Nightcore";
 			case FULLCOMBO:
 				return "Full Combo";
+			case NOFAIL:
+				return "No Fail";
 		}
 	}
 
@@ -733,6 +750,8 @@ abstract Modifiers(String) {
 				return "Pitches up the song.";
 			case FULLCOMBO:
 				return "No more Skill Issues";
+			case NOFAIL:
+				return "Prevents boyfriend from getting blueballed.";
 		}
 	}
 
@@ -744,8 +763,13 @@ abstract Modifiers(String) {
 				case NIGHTCORE:
 					mult += 0.5;
 				case FULLCOMBO:
-					mult += 0.0;
+					mult += 0;
+				case NOFAIL:
+					mult = 0;
 			}
+		}
+		if (FreeplayState.modifiers.contains(NOFAIL)) {
+			mult = 0;
 		}
 		return mult;
 	}
