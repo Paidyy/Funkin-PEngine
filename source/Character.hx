@@ -21,6 +21,8 @@ class Character extends AnimatedSprite {
 	public var config:AnyObjectMap = new AnyObjectMap();
 	public var configPath:String = "";
 
+	public var idleAnim:String = "idle";
+
 	public function addPrefixAlternative(name, prefix, frames, looped) {
 		animationsFromAlt.add(name);
 		animation.addByPrefix(name, prefix, frames, looped);
@@ -63,8 +65,6 @@ class Character extends AnimatedSprite {
 			}
 			Cache.cacheCharacterConfig(curCharacter);
 		}
-
-		var idleAnim = "idle";
 		
 		setConfigPath(Paths.getCharacterPath(curCharacter) + 'config.yml');
 
@@ -346,10 +346,8 @@ class Character extends AnimatedSprite {
 						playAnim('danceRight');
 					else
 						playAnim('danceLeft');
-				case 'pico-speaker':
-					playAnim("picoShoot1");
 				default:
-					playAnim('idle');
+					playAnim(idleAnim);
 			}
 		}
 	}
