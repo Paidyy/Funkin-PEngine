@@ -1,5 +1,7 @@
 package;
 
+import haxe.Constraints.Function;
+import llua.LuaJIT;
 import Main.Notification;
 import flixel.graphics.frames.FlxAtlasFrames;
 import sys.io.File;
@@ -23,8 +25,12 @@ import llua.LuaL;
 import llua.State;
 
 class LuaShit {
+    //TODO move functions to their own class, so it will be faster to change the lua wiki markdown page
+    //LUA FUNCTIONS CRASHES WHEN THERE ARE MORE THAN 5 ARGUMENTS
     var lua:State;
+    var luaPath:String = "";
     public function new(luaPath:String) {
+		this.luaPath = luaPath;
         lua = LuaL.newstate();
         LuaL.openlibs(lua);
         #if debug
@@ -34,8 +40,9 @@ class LuaShit {
         Lua.init_callbacks(lua);
 
         setVariable("swagSong", PlayState.SONG);
-        setVariable("windowWidth", FlxG.width);
-        setVariable("windowHeight", FlxG.height);
+        setVariable("gameWidth", FlxG.width);
+		setVariable("gameHeight", FlxG.height);
+        setVariable("isDebug", #if debug true #else false #end);
 
 		Lua_helper.add_callback(lua, "getMousePosition", function() {
 			return [FlxG.mouse.x, FlxG.mouse.y];
@@ -102,65 +109,93 @@ class LuaShit {
 			new Notification(str).show();
 		});
 
-        Lua_helper.add_callback(lua, "stageSpritePlay", function(sprite:String, animation:String, ?force:Bool = true) {
+		Lua_helper.add_callback(lua, "callPlayStateFunction", function(func:String, ?args:Array<String>) {
+            return callFunction(func, args);
+		});
+
+		Lua_helper.add_callback(lua, "testLuaFuckYou", function(funny:String, p:Float, i:Float, ss:Float, x:Float) {
+            trace("works yeay");
+		});
+
+        //TODO
+        //for fucksake why this isn't working???
+		Lua_helper.add_callback(lua, "stageSpriteTweenQuadMotion",
+			function(spriteName:String, fromX:Float = 0, fromY:Float = 0, controlX:Float = 0, controlY:Float = 0, toX:Float = 0, toY:Float = 0,
+					duration:Float = 0) {
+			trace("if you see this message, HOW THE FUCK??????");
+			for (sprite in PlayState.currentPlaystate.stage) {
+				if (Std.isOfType(sprite, StageAsset)) {
+					var stageSprite:StageAsset = sprite;
+					if (stageSprite.name == spriteName) {
+                        FlxTween.quadMotion(stageSprite, fromX, fromY, controlX, controlY, toX, toY, duration, true);
+						break;
+					}
+				}
+			}
+		});
+
+		Lua_helper.add_callback(lua, "stageSpritePlay", function(spriteName:String, animation:String, ?force:Bool = true) {
             for (sprite in PlayState.currentPlaystate.stage) {
                 if (Std.isOfType(sprite, StageAsset)) {
                     var stageSprite:StageAsset = sprite;
-                    if (stageSprite.name == sprite) {
+					if (stageSprite.name == spriteName) {
                         stageSprite.animation.play(animation, force);
+						break;
                     }
                 }
             }
         });
 
-        Lua_helper.add_callback(lua, "stageSpriteAnimationAddByPrefix", function(sprite:String, animationName:String, xmlAnimationName:String, framerate:Int = 24, ?looped:Bool = false) {
+		Lua_helper.add_callback(lua, "stageSpriteAnimationAddByPrefix", function(spriteName:String, animationName:String, xmlAnimationName:String, framerate:Int = 24, ?looped:Bool = false) {
             for (sprite in PlayState.currentPlaystate.stage) {
                 if (Std.isOfType(sprite, StageAsset)) {
                     var stageSprite:StageAsset = sprite;
-                    if (stageSprite.name == sprite) {
+					if (stageSprite.name == spriteName) {
                         stageSprite.animation.addByPrefix(animationName, xmlAnimationName, framerate, looped);
+						break;
                     }
                 }
             }
         });
 
-        Lua_helper.add_callback(lua, "stageSpriteAnimationAddByIndices", function(sprite:String, animationName:String, xmlAnimationName:String, indices:Array<Int>, framerate:Int = 24, ?looped:Bool = false) {
+		Lua_helper.add_callback(lua, "stageSpriteAnimationAddByIndices", function(spriteName:String, animationName:String, xmlAnimationName:String, indices:Array<Int>, framerate:Int = 24, ?looped:Bool = false) {
             for (sprite in PlayState.currentPlaystate.stage) {
                 if (Std.isOfType(sprite, StageAsset)) { 
                     var stageSprite:StageAsset = sprite;
-                    if (stageSprite.name == sprite) {
+					if (stageSprite.name == spriteName) {
                         stageSprite.animation.addByIndices(animationName, xmlAnimationName, indices, "", framerate, looped);
+						break;
                     }
                 }
             }
         });
 
-        Lua_helper.add_callback(lua, "stageSpriteGetProperty", function(sprite:String, property:String) {
+		Lua_helper.add_callback(lua, "stageSpriteGetProperty", function(spriteName:String, property:String) {
             for (sprite in PlayState.currentPlaystate.stage) {
                 if (Std.isOfType(sprite, StageAsset)) {
                     var stageSprite:StageAsset = sprite;
-                    if (stageSprite.name == sprite) {
-                        return Reflect.getProperty(PlayState.currentPlaystate.stage, property);
+					if (stageSprite.name == spriteName) {
+						return Reflect.getProperty(stageSprite, property);
                     }
                 }
             }
             return null;
         });
 
-        Lua_helper.add_callback(lua, "stageSpriteSetProperty", function(sprite:String, property:String, value:Dynamic) {
+        Lua_helper.add_callback(lua, "stageSpriteSetProperty", function(spriteName:String, property:String, value:Dynamic) {
             for (sprite in PlayState.currentPlaystate.stage) {
                 if (Std.isOfType(sprite, StageAsset)) {
                     var stageSprite:StageAsset = sprite;
-                    if (stageSprite.name == sprite) {
-                        Reflect.setProperty(PlayState.currentPlaystate.stage, property, value);
+					if (stageSprite.name == spriteName) {
+						Reflect.setProperty(stageSprite, property, value);
+                        break;
                     }
                 }
             }
-            return null;
         });
 
-        Lua_helper.add_callback(lua, "tweenValue", function(originalValue:Float, value:Float, duration:Float = 1, tweenFunction:String = null) {
-            FlxTween.num(originalValue, value, duration, null, f -> call(tweenFunction, [f]));
+        Lua_helper.add_callback(lua, "tweenValue", function(from:Float, to:Float, duration:Float = 1, tweenFunction:String = null) {
+            FlxTween.num(from, to, duration, null, f -> call(tweenFunction, [f]));
         });
 
         Lua_helper.add_callback(lua, "isKeyJustPressed", function(key:String) {
@@ -293,6 +328,18 @@ class LuaShit {
 			Cache.cacheCharacter(char, daChar, true);
         });
 
+		Lua_helper.add_callback(lua, "characterPlayAnimation", function(char:String, anim:String, ?force:Bool = true, ?reversed:Bool = false, ?frame:Int = 0) {
+            switch (char) {
+                case "bf":
+					PlayState.bf.playAnim(anim, force, reversed, frame);
+				case "gf":
+					PlayState.gf.playAnim(anim, force, reversed, frame);
+				case "dad":
+					PlayState.dad.playAnim(anim, force, reversed, frame);
+            }
+			
+		});
+
         // Changes character
         Lua_helper.add_callback(lua, "changeCharacter", function(char:String, newChar:String) {
             PlayState.currentPlaystate.changeCharacter(char, newChar);
@@ -321,6 +368,44 @@ class LuaShit {
             var daSprite:FlxObject = getField(object);
             daSprite.setPosition(x, y);
         });
+
+		Lua_helper.add_callback(lua, "setStrumNoteAngle", function(char:String, note:Int, angle:Float) {
+			if (char == "dad") {
+				PlayState.currentPlaystate.dadStrumLineNotes.forEach(function(spr:FlxSprite) {
+					if (note == spr.ID) {
+						spr.angle = angle;
+						return;
+					}
+				});
+			}
+			else {
+				PlayState.currentPlaystate.bfStrumLineNotes.forEach(function(spr:FlxSprite) {
+					if (note == spr.ID) {
+						spr.angle = angle;
+						return;
+					}
+				});
+			}
+		});
+
+		Lua_helper.add_callback(lua, "setStrumNoteAlpha", function(char:String, note:Int, alpha:Float) {
+			if (char == "dad") {
+				PlayState.currentPlaystate.dadStrumLineNotes.forEach(function(spr:FlxSprite) {
+					if (note == spr.ID) {
+						spr.alpha = alpha;
+						return;
+					}
+				});
+			}
+			else {
+				PlayState.currentPlaystate.bfStrumLineNotes.forEach(function(spr:FlxSprite) {
+					if (note == spr.ID) {
+						spr.alpha = alpha;
+						return;
+					}
+				});
+			}
+		});
 
         // Sets the position of specified strum note
         Lua_helper.add_callback(lua, "setStrumNotePos", function(char:String, note:Int, x:Float, y:Float) {
@@ -470,7 +555,14 @@ class LuaShit {
             }
 		});
 
-        LuaL.dofile(lua, luaPath);
+		if (FileSystem.exists(luaPath)) {
+			var doFile = LuaL.dofile(lua, luaPath);
+			var result:String = Lua.tostring(lua, doFile);
+			if (doFile != 0) {
+				trace("Lua script: '" + luaPath + "' caught an Exception:\n" + result);
+				new Notification("Caught an exception in lua script | see console for details").show();
+			}
+        }
     }
 
     public function setField(field:String, value:Dynamic) {
@@ -480,6 +572,19 @@ class LuaShit {
         if (getFieldType(field) == STATIC) {
             Reflect.setField(PlayState, field, value);
         }
+    }
+
+    public function callFunction(func:String, args:Array<Dynamic>):Dynamic {
+        if (args == null) {
+            args = [];
+        }
+		if (getFieldType(getField(func)) == INSTANCE) {
+			return Reflect.callMethod(PlayState.currentPlaystate, getField(func), args);
+		}
+		if (getFieldType(getField(func)) == STATIC) {
+			return Reflect.callMethod(PlayState, getField(func), args);
+		}
+        return null;
     }
 
     public function getField(field:String):Dynamic {
@@ -520,7 +625,11 @@ class LuaShit {
         else
             args = [];
         
-        Lua.pcall(lua, args.length, 1, 1);
+        var pcall = Lua.pcall(lua, args.length, 1, 0);
+		if (pcall == 1) {
+			var result = Lua.tostring(lua, pcall);
+			trace("Lua script: '" + luaPath + "' caught an Exception:\n" + result);
+        }
     }
 
     public function close() {
