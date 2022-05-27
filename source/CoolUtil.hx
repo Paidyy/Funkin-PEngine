@@ -19,8 +19,8 @@ import yaml.Yaml;
 import openfl.utils.Assets as OpenFlAssets;
 
 class CoolUtil {
-	public static var difficultyArray:Array<String> = ['EASY', "NORMAL", "HARD"];
-
+	public static var defaultDiffArray:Array<String> = ['EASY', 'NORMAL', 'HARD'];
+	public static var difficultyArray:Array<String> = defaultDiffArray;
 	#if lime
 	public static function setPitch(sound:FlxSound, pitch:Float = 1.0) {
 		try {
@@ -67,6 +67,9 @@ class CoolUtil {
 		}
 		for (diff in DIFFS) {
 			diffs.push(diff);
+		}
+		if (diffs.length <= 0) {
+			diffs = defaultDiffArray;
 		}
 		difficultyArray = diffs;
 		return difficultyArray;
