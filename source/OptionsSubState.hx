@@ -208,7 +208,8 @@ class OptionsGameplaySubState extends OptionSubState {
 	public function new(inGame) {
 		var items = [
 			new OptionItem("Controls"),
-			new OptionItem("Ghost Tapping", true, Options.ghostTapping, value -> Options.ghostTapping = value),
+			// deleting ghost tapping for idk what time bcs it fucks up and no one fucking disables it
+			//new OptionItem("Ghost Tapping", true, Options.ghostTapping, value -> Options.ghostTapping = value),
 			new OptionItem("Downscroll", true, Options.downscroll, value -> Options.downscroll = value),
 			new OptionItem("Disable Spam Checker (pussy mode)", true, Options.disableSpamChecker, value -> Options.disableSpamChecker = value),
 			new OptionItem("Disable New Combo System", true, Options.disableNewComboSystem, value -> {
@@ -221,7 +222,8 @@ class OptionsGameplaySubState extends OptionSubState {
 					PlayState.currentPlaystate.combo.initTimer();
 				}
 			}),
-			new OptionItem("Chill Mode", true, Options.chillMode, value -> Options.chillMode = value)
+			new OptionItem("Chill Mode", true, Options.chillMode, value -> Options.chillMode = value),
+			new OptionItem("Hit Sounds", true, Options.hitSounds, value -> Options.hitSounds = value)
 		];
 		super(items, inGame);
 	}

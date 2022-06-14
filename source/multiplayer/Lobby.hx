@@ -1,5 +1,7 @@
 package multiplayer;
 
+import Modifier.Modifiers;
+import udprotean.server.UDProteanClientBehavior;
 import OptionsSubState.Background;
 import Discord.DiscordClient;
 import flixel.addons.ui.FlxUIDropDownMenu;
@@ -23,6 +25,8 @@ class MultiPlayer {
 
 	public var nick:String;
     public var ready:Bool;
+
+	public var peer:UDProteanClientBehavior;
 
     //CURRENTLY UNUSED
     public var score:Int;
@@ -231,6 +235,7 @@ class Lobby extends MusicBeatState {
 	}
 
     function goToSong(song:String, diff:Int) {
+		Modifiers.activeModifiers = [];
         inGame = true;
 
 		PlayState.isStoryMode = false;
@@ -256,10 +261,10 @@ class Lobby extends MusicBeatState {
 		trace('CUR WEEK ' + PlayState.storyWeek);
 
 		if (isHost) {
-            PlayState.playAs = "bf";
+			PlayState.currentPlaystate.playAs = "bf";
             FlxG.switchState(new PlayState(true));
         } else {
-            PlayState.playAs = "dad";
+			PlayState.currentPlaystate.playAs = "dad";
             FlxG.switchState(new PlayState(true));
         }
     }

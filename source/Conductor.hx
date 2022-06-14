@@ -31,7 +31,7 @@ class Conductor extends FlxBasic {
 	 * zone that should make note be hittable
 	 * setting safeZoneOffset to very high values will cause sarv engine
 	 */
-	public static var safeZoneOffset:Float = (safeFrames / 60) * 1500; // is calculated in create(), is safeFrames in milliseconds
+	public static var safeZoneOffset:Float = (safeFrames / 60) * 2000; // is calculated in create(), is safeFrames in milliseconds
 
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 

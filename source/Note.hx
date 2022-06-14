@@ -35,7 +35,7 @@ class Note extends FlxSprite {
 	/** `true` if the note is for boyfriend */
 	public var mustPress:Bool = false;
 
-	/** `true` when the note is on the song position that can be hit */
+	/** `true` when the note is in `Conductor.safeZoneOffset` */
 	public var canBeHit:Bool = false;
 
 	/** `true` when it missed the strum line */
@@ -49,6 +49,18 @@ class Note extends FlxSprite {
 
 	/** `true` if the note `strumTime` equals or is higher than current song position */
 	public var wasInSongPosition:Bool = false;
+
+	public var canActuallyBeHit(default, set):Bool = false;
+
+	function set_canActuallyBeHit(value:Bool):Bool {
+		if (canBeHit) {
+			canActuallyBeHit = value;
+		}
+		else {
+			canActuallyBeHit = false;
+		}
+		return canActuallyBeHit;
+	}
 
 	//OTHER
 	public static var sizeShit = 0.7;
@@ -248,7 +260,7 @@ class Note extends FlxSprite {
 			wasInSongPosition = true;
 
 		if (!mustPress) {
-			if (PlayState.playAs == "bf") {
+			if (PlayState.currentPlaystate.playAs == "bf") {
 				canBeHit = false;
 				if (strumTime <= Conductor.songPosition)
 					wasGoodHit = true;
@@ -283,6 +295,9 @@ class Note extends FlxSprite {
 				if (animation.curAnim.name.endsWith("holdend"))
 					offset.y = -(height / 1.35);
 		}
+
+		// would be for blind mode
+		//alpha = canActuallyBeHit ? 1.0 : 0.05;
 	}
 
 	public var missedSongPosition:Bool = false;

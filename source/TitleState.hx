@@ -67,6 +67,11 @@ class TitleState extends MusicBeatState {
 
 		curWacky = FlxG.random.getObject(getIntroTextShit());
 
+		if (Date.now().getMonth() == 5 && Date.now().getDate() == 1) {
+			curWacky[0] = "Happy Birthday Notch";
+			curWacky[1] = "Shit, wrong game";
+		}
+
 		// DEBUG BULLSHIT
 
 		super.create();

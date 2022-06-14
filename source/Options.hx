@@ -42,6 +42,7 @@ class Options {
 	public static var bgBlur:Float = 0.0;
 	public static var disableNewComboSystem:Bool = false;
 	public static var chillMode:Bool = false;
+	public static var hitSounds:Bool = false;
 	
 	private static var _optionsSave:AltSave;
 	private static var _controlsSave:AltSave;

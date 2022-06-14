@@ -1,5 +1,6 @@
 package;
 
+import Modifier.Modifiers;
 import Alphabet.AlphaCharacter;
 import flixel.tweens.FlxTween;
 import flixel.FlxG;
@@ -103,7 +104,7 @@ class Combo extends FlxBasic {
 	public function failCombo() {
 		staticCombo = 0;
         curCombo = 0;
-		if (FreeplayState.modifiers.contains(FULLCOMBO))
+		if (Modifiers.activeModifiers.contains(FULLCOMBO))
 			PlayState.currentPlaystate.health = 0;
     }
 

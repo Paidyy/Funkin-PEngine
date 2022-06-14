@@ -19,7 +19,7 @@ class GameOverSubstate extends MusicBeatSubstate {
 	public function new(x:Float, y:Float) {
 		daStage = PlayState.currentPlaystate.stage.name;
 		var daBf:String = '';
-		switch ((PlayState.playAs == "bf" ? PlayState.bf.curCharacter : PlayState.dad.curCharacter)) {
+		switch ((PlayState.currentPlaystate.playAs == "bf" ? PlayState.bf.curCharacter : PlayState.dad.curCharacter)) {
 			case 'bf-pixel':
 				daBf = 'bf-pixel-dead';
 			case 'bf-holding-gf':
@@ -40,7 +40,7 @@ class GameOverSubstate extends MusicBeatSubstate {
 		}
 
 		char = new Character(x, y, daBf);
-		if (PlayState.playAs == "bf")
+		if (PlayState.currentPlaystate.playAs == "bf")
 			char.flipX = false;
 		add(char);
 

@@ -230,19 +230,43 @@ class Character extends AnimatedSprite {
 		colorTransform.blueOffset = 0;
 	}
 
+	public function playIdle() {
+		if (!animation.curAnim.name.startsWith("sing")) {
+			playAnim(idleAnim);
+			return;
+		}
+		if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished) {
+			playAnim(idleAnim);
+			return;
+		}
+		if (holdTimer > Conductor.stepCrochet * 4 * 0.001) {
+			if (animation.curAnim.name.startsWith('sing') && !animation.curAnim.name.endsWith('miss')) {
+				playAnim(idleAnim);
+				return;
+			}
+		}
+	}
+
 	override function update(elapsed:Float) {
+		if (!debugMode) {
+			if (animation.curAnim.name.startsWith('sing')) {
+				holdTimer += elapsed;
+			}
+			else
+				holdTimer = 0;
+
+			if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode) {
+				playAnim(idleAnim, true, false, 10);
+			}
+		}
 		if (!animation.curAnim.name.startsWith("sing") && missColorTransform) {
 			resetColorTransform();
 		}
 		if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished) {
 			playAnim('deathLoop');
 		}
-		if (PlayState.playAs == "bf") {
+		if (PlayState.currentPlaystate.playAs == "bf") {
 			if (!curCharacter.startsWith('bf')) {
-				if (animation.curAnim.name.startsWith('sing')) {
-					holdTimer += elapsed;
-				}
-
 				var dadVar:Float = 4;
 				if (curCharacter == 'dad')
 					dadVar = 6.1;

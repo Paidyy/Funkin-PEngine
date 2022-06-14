@@ -129,6 +129,10 @@ class Main extends Sprite {
 		#if !mobile
 		addChild(new EFPS());
 		#end
+		
+		#if MUTE
+		FlxG.sound.muted = true;
+		#end
 
 		FlxG.plugins.add(Main.notifTweenManager = new NotificationTweenManager());
 	}
@@ -157,6 +161,8 @@ class Game extends FlxGame {
 				super.update();
 			}
 			catch (exc) {
+				trace("Caught an Exception! (aw hell nah)");
+				trace(exc.details());
 				FlxG.switchState(new CrashHandler(exc));
 			}
 		}
@@ -199,8 +205,6 @@ class CrashHandler extends FlxState {
 	}
 
 	override function create() {
-		trace(exception);
-		
 		super.create();
 
 		var bg = new Background(FlxColor.fromString("#696969"));

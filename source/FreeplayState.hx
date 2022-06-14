@@ -1,5 +1,6 @@
 package;
 
+import Modifier.ModifierSubState;
 import flixel.group.FlxSpriteGroup;
 import flixel.FlxSubState;
 import flixel.system.FlxAssets.FlxSoundAsset;
@@ -34,8 +35,6 @@ using StringTools;
 class FreeplayState extends MusicBeatState {
 	var songs:Array<SongMetadata> = [];
 
-	public static var modifiers:Array<Modifiers> = [];
-
 	var selector:FlxText;
 	var curSelected:Int = 0;
 	var curDifficulty:Int = 1;
@@ -62,6 +61,8 @@ class FreeplayState extends MusicBeatState {
 	var erectSongExists = false;
 
 	override function create() {
+		// using as a refference from week 7 Funkin.js
+		// this.coolColors=[-7179779,-7179779,-14535868,-7072173,-223529,-6237697,-34625,-608764];
 		/* 
 			if (FlxG.sound.music != null)
 			{
@@ -88,25 +89,25 @@ class FreeplayState extends MusicBeatState {
 		if (!erectMode) {
 			songs.push(new SongMetadata("Tutorial", "week0", 'gf', "#ff82a5"));
 			if (StoryMenuState.isWeekUnlocked("week0") || isDebug)
-				addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], "week1", ['dad'], "#9471e3");
+				addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], "week1", ['dad'], -7179779);
 
 			if (StoryMenuState.isWeekUnlocked("week1") || isDebug)
-				addWeek(['Spookeez', 'South', 'Monster'], "week2", ['spooky', 'spooky', 'monster'], "#2a3d42");
+				addWeek(['Spookeez', 'South', 'Monster'], "week2", ['spooky', 'spooky', 'monster'], -14535868);
 
 			if (StoryMenuState.isWeekUnlocked("week2") || isDebug)
-				addWeek(['Pico', 'Philly', 'Blammed'], "week3", ['pico'], "#b0284f");
+				addWeek(['Pico', 'Philly', 'Blammed'], "week3", ['pico'], -7072173);
 
 			if (StoryMenuState.isWeekUnlocked("week3") || isDebug)
-				addWeek(['Satin-Panties', 'High', 'Milf'], "week4", ['mom'], "#ff82a5");
+				addWeek(['Satin-Panties', 'High', 'Milf'], "week4", ['mom'], -223529);
 
 			if (StoryMenuState.isWeekUnlocked("week4") || isDebug)
-				addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], "week5", ['parents-christmas', 'parents-christmas', 'monster-christmas'], "#e3edff");
+				addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], "week5", ['parents-christmas', 'parents-christmas', 'monster-christmas'], -6237697);
 
 			if (StoryMenuState.isWeekUnlocked("week5") || isDebug)
-				addWeek(['Senpai', 'Roses', 'Thorns'], "week6", ['senpai', 'senpai', 'spirit'], "#f593de");
+				addWeek(['Senpai', 'Roses', 'Thorns'], "week6", ['senpai', 'senpai', 'spirit'], -34625);
 
 			if (StoryMenuState.isWeekUnlocked("week6") || isDebug)
-				addWeek(['Ugh', 'Guns', 'Stress'], "week7", ['tankman'], "#ffb029");
+				addWeek(['Ugh', 'Guns', 'Stress'], "week7", ['tankman'], -608764);
 		}
 		else {
 			//put erect songs here
@@ -280,11 +281,11 @@ class FreeplayState extends MusicBeatState {
 		}
 	}
 
-	public function addSong(songName:String, week:String, songCharacter:String, freeplayColor:String) {
+	public function addSong(songName:String, week:String, songCharacter:String, freeplayColor:Dynamic) {
 		songs.push(new SongMetadata(songName, week, songCharacter, freeplayColor));
 	}
 
-	public function addWeek(songs:Array<String>, week:String, ?songCharacters:Array<String>, freeplayColor:String) {
+	public function addWeek(songs:Array<String>, week:String, ?songCharacters:Array<String>, freeplayColor:Dynamic) {
 		if (songCharacters == null)
 			songCharacters = ['face'];
 
@@ -557,7 +558,8 @@ class FreeplayState extends MusicBeatState {
 				}
 			}
 
-			FlxTween.color(bg, 0.2, bg.color, FlxColor.fromString(songs[curSelected].freeplayColor));
+			FlxTween.color(bg, 0.2, bg.color,
+				Std.isOfType(songs[curSelected].freeplayColor, String) ? FlxColor.fromString(songs[curSelected].freeplayColor) : FlxColor.fromInt(songs[curSelected].freeplayColor));
 		}
 		CoolUtil.setDifficultyList(songs[curSelected].songName);
 		// if (CoolUtil.difficultyArray.length < prevDiffList.length || !CoolUtil.difficultyArray.contains(diffText.text)) {
@@ -595,182 +597,12 @@ class SongMetadata {
 	public var songName:String = "";
 	public var week:String = "week0";
 	public var songCharacter:String = "";
-	public var freeplayColor:String = null;
+	public var freeplayColor:Dynamic = null;
 
-	public function new(song:String, week:String, songCharacter:String, ?freeplayColor:String) {
+	public function new(song:String, week:String, songCharacter:String, ?freeplayColor:Dynamic) {
 		this.songName = song;
 		this.week = week;
 		this.songCharacter = songCharacter;
 		this.freeplayColor = freeplayColor;
-	}
-}
-
-class ModifierSubState extends FlxSubState {
-	var modifierItems:FlxTypedSpriteGroup<ModifierImage> = new FlxTypedSpriteGroup<ModifierImage>();
-	var curModifier:Int = 0;
-	var title:FlxText = new FlxText(0, 0, 0, "", 20);
-	var desc:FlxText = new FlxText(0, 0, 0, "", 26);
-	var multInfo:FlxText = new FlxText(0, 0, 0, "", 24);
-	override public function create() {
-		super.create();
-
-		FreeplayState.inSubState = true;
-
-		var bg = new FlxSprite();
-		bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bg.alpha = 0.6;
-		add(bg);
-
-		var nightcore = new ModifierImage();
-		nightcore.loadGraphic(Paths.image("modifiers/nightcore"));
-		nightcore.setGraphicSize(80, 80);
-		nightcore.updateHitbox();
-		nightcore.name = Modifiers.NIGHTCORE;
-		nightcore.ID = 0;
-		if (!FreeplayState.modifiers.contains(nightcore.name))
-			nightcore.setColorTransform(0.3, 0.3, 0.3);
-
-		var fullCombo = new ModifierImage(nightcore.x + nightcore.width + 20);
-		fullCombo.loadGraphic(Paths.image("modifiers/full-combo"));
-		fullCombo.setGraphicSize(80, 80);
-		fullCombo.updateHitbox();
-		fullCombo.name = Modifiers.FULLCOMBO;
-		fullCombo.ID = 1;
-		if (!FreeplayState.modifiers.contains(fullCombo.name))
-			fullCombo.setColorTransform(0.3, 0.3, 0.3);
-
-		var noFail = new ModifierImage(fullCombo.x + fullCombo.width + 20);
-		noFail.loadGraphic(Paths.image("modifiers/no-fail"));
-		noFail.setGraphicSize(80, 80);
-		noFail.updateHitbox();
-		noFail.name = Modifiers.NOFAIL;
-		noFail.ID = 2;
-		if (!FreeplayState.modifiers.contains(noFail.name))
-			noFail.setColorTransform(0.3, 0.3, 0.3);
-
-		modifierItems.add(nightcore);
-		modifierItems.add(fullCombo);
-		modifierItems.add(noFail);
-		modifierItems.screenCenter();
-
-		add(modifierItems);
-
-		title.setFormat("VCR OSD Mono", title.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		desc.setFormat("VCR OSD Mono", desc.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		multInfo.setFormat("VCR OSD Mono", multInfo.size, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		
-		add(title);
-		add(desc);
-		add(multInfo);
-	}
-
-	override public function update(elapsed:Float) {
-		super.update(elapsed);
-
-		if (Controls.check(UI_LEFT))
-			curModifier--;
-		if (Controls.check(UI_RIGHT))
-			curModifier++;
-
-		if (curModifier > modifierItems.length - 1) {
-			curModifier = 0;
-		}
-		if (curModifier < 0) {
-			curModifier = modifierItems.length - 1;
-		}
-
-		for (item in modifierItems) {
-			if (FreeplayState.modifiers.contains(item.name))
-				item.setColorTransform(1, 1, 1);
-			else
-				item.setColorTransform(0.3, 0.3, 0.3);
-			item.alpha = 0.8;
-			if (item.ID == curModifier) {
-				item.alpha = 1;
-				if (Controls.check(ACCEPT)) {
-					if (FreeplayState.modifiers.contains(item.name)) {
-						FreeplayState.modifiers.remove(item.name);
-					}
-					else {
-						FreeplayState.modifiers.push(item.name);
-					}
-				}
-
-				title.text = Modifiers.getTitle(item.name);
-				desc.text = Modifiers.getDescription(item.name);
-				title.screenCenter();
-				title.y -= 200;
-				desc.screenCenter(X);
-				desc.y = title.y + title.height + 10;
-
-				multInfo.screenCenter(X);
-				multInfo.y = 25;
-				var multi = Modifiers.calculateMultiplier();
-				multInfo.text = "Score Multiplier: " + multi + "x";
-				if (multi > 1)
-					multInfo.color = FlxColor.LIME;
-				else if (multi < 1)
-					multInfo.color = FlxColor.RED;
-				else
-					multInfo.color = FlxColor.WHITE;
-			}
-		}
-
-		if (FlxG.keys.justPressed.SHIFT || Controls.check(BACK)) {
-			FreeplayState.inSubState = false;
-			close();
-		}
-	}
-}
-
-class ModifierImage extends FlxSprite {
-	public var name:Modifiers;
-}
-
-@:enum
-abstract Modifiers(String) {
-	var NIGHTCORE = "nc";
-	var FULLCOMBO = "fc";
-	var NOFAIL = "nf";
-
-	public static function getTitle(mod:Modifiers):String {
-		switch(mod) {
-			case NIGHTCORE:
-				return "Nightcore";
-			case FULLCOMBO:
-				return "Full Combo";
-			case NOFAIL:
-				return "No Fail";
-		}
-	}
-
-	public static function getDescription(mod:Modifiers):String {
-		switch (mod) {
-			case NIGHTCORE:
-				return "Pitches up the song.";
-			case FULLCOMBO:
-				return "No more Skill Issues";
-			case NOFAIL:
-				return "Prevents boyfriend from getting blueballed.";
-		}
-	}
-
-
-	public static function calculateMultiplier():Float {
-		var mult = 1.0;
-		for (s in FreeplayState.modifiers) {
-			switch (s) {
-				case NIGHTCORE:
-					mult += 0.5;
-				case FULLCOMBO:
-					mult += 0;
-				case NOFAIL:
-					mult = 0;
-			}
-		}
-		if (FreeplayState.modifiers.contains(NOFAIL)) {
-			mult = 0;
-		}
-		return mult;
 	}
 }

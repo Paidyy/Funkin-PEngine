@@ -1,5 +1,6 @@
 package multiplayer;
 
+import udprotean.shared.Utils;
 import multiplayer.Lobby;
 import flixel.FlxG;
 import haxe.io.Bytes;
@@ -19,9 +20,15 @@ class Server extends UDProteanServer {
 
 			trace("Started Server with IP: " + host + " Port: " + port);
 
+			@:privateAccess
 			onClientConnected(client -> {
+				if (peers.length > 1) {
+					client.send(Bytes.ofString("EXC::Too many players!"));
+					removePeer(Utils.addressToId(client.peerAddress));
+				}
 				trace("Some Client Connected");
 
+				Lobby.player2.peer = client;
 				Lobby.lobbyPlayer2.alpha = 1;
 				sendStringToCurClient("P1::nick::" + Lobby.player1.nick);
 				sendStringToCurClient("P1::ready::" + Lobby.player1.ready);
@@ -55,8 +62,9 @@ class Server extends UDProteanServer {
 	}
 
 	public function sendStringToCurClient(s:String) {
-		for (client in peers)
+		for (client in peers) {
 			client.send(Bytes.ofString(s));
+		}
     }
 
 	public function hasClients() {
