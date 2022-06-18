@@ -44,3 +44,8 @@ jobs:
       - name: Build
         run: |
           haxelib run lime build windows
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: export/release/windows/bin
