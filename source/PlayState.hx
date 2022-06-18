@@ -2800,7 +2800,6 @@ class PlayState extends MusicBeatState {
 				if (isInMissZone) {
 					if (!daNote.wasGoodHit) {
 						if (!daNote.canBeMissed) {
-							vocals.volume = 0;
 							noteMiss(daNote.noteData, true, daNote);
 						}
 						daNote.active = false;
@@ -3715,7 +3714,7 @@ class PlayState extends MusicBeatState {
 
 		// SUSTAIN NOTES INPUT
 		//HIGHER PRIORITY TO MAKE NORMAL NOTES MORE HITTABLE
-		if (isAnyNoteKeyPressed() && generatedMusic) {
+		if (isAnyNoteKeyPressed() && generatedMusic && notes.length > 0) {
 			notes.forEachAlive(function(daNote:Note) {
 				if (daNote.canBeHit && (playAs == "bf" ? daNote.mustPress : !daNote.mustPress) && daNote.isSustainNote) {
 					if (isKeyPressedForNoteData(daNote.noteData)) {
@@ -3731,7 +3730,7 @@ class PlayState extends MusicBeatState {
 		}
 
 		// NORMAL NOTES INPUT
-		if (isAnyNoteKeyPressed(JUST_PRESSED) && !charStunned && generatedMusic) {
+		if (isAnyNoteKeyPressed(JUST_PRESSED) && !charStunned && generatedMusic && notes.length > 0) {
 			if (playAs == "bf") {
 				bf.holdTimer = 0;
 			}
@@ -3969,6 +3968,11 @@ class PlayState extends MusicBeatState {
 	}
 
 	function noteMiss(direction:Int = 1, tooLate:Bool = false, ?daNote:Note = null):Void {
+		if (daNote != null && playAs == "bf" ? !daNote.mustPress : daNote.mustPress) {
+			removeNote(daNote);
+			return;
+		}
+		vocals.volume = 0;
 		var charStunned = false;
 		if (playAs == "bf") {
 			charStunned = bf.stunned;
