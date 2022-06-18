@@ -1,0 +1,39 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
+      - run: |
+          haxe -version
+          haxelib install hxnodejs
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          haxelib run lime setup
+          haxelib run lime setup flixel
+          haxelib install hscript
+          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
+          haxelib install openfl-webm
+          haxelib git yaml https://github.com/Paidyy/haxe-yaml.git
+          haxelib install linc_luajit
+          haxelib install udprotean
+          haxelib git linc_clipboard https://github.com/josuigoa/linc_clipboard.git
+          haxelib install markdown
+          lime build windows
