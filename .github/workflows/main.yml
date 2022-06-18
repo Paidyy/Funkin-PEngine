@@ -36,4 +36,4 @@ jobs:
           haxelib install udprotean
           haxelib git linc_clipboard https://github.com/josuigoa/linc_clipboard.git
           haxelib install markdown
-          lime build windows
+          haxelib run lime build windows
