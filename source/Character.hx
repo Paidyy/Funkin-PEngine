@@ -1,5 +1,6 @@
 package;
 
+import flixel.math.FlxMath;
 import haxe.io.Path;
 import sys.FileSystem;
 import yaml.util.ObjectMap.AnyObjectMap;
@@ -28,7 +29,7 @@ class Character extends AnimatedSprite {
 		animation.addByPrefix(name, prefix, frames, looped);
 	}
 
-	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, isDebug = false) {
+	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, isDebug = false, forceCache:Bool = false) {
 		super(x, y);
 
 		animationsFromAlt = new List<String>();
@@ -53,7 +54,7 @@ class Character extends AnimatedSprite {
 				path = path.substring(0, path.length - 1);
 			}
 			*/
-			frames = Cache.cacheCharacterAssets(curCharacter);
+			frames = Cache.cacheCharacterAssets(curCharacter, forceCache);
 		}
 		else {
 			trace("openfl character: " + curCharacter);
@@ -63,7 +64,7 @@ class Character extends AnimatedSprite {
 			else {
 				frames = Paths.getSparrowAtlas('characters/' + curCharacter + '/' + curCharacter);
 			}
-			Cache.cacheCharacterConfig(curCharacter);
+			Cache.cacheCharacterConfig(curCharacter, forceCache);
 		}
 		
 		setConfigPath(Paths.getCharacterPath(curCharacter) + 'config.yml');
@@ -231,6 +232,22 @@ class Character extends AnimatedSprite {
 	}
 
 	public function playIdle() {
+		//Sustain shit
+		if (holdTimer > Conductor.stepCrochet * 4 * 0.001 && animation.curAnim.name.startsWith('sing') && !animation.curAnim.name.endsWith('miss')) {
+			playAnim(idleAnim);
+			return;
+		}
+		//Normal notes
+		if (animation.finished || animation.name == idleAnim) {
+			playAnim(idleAnim);
+			return;
+		}
+
+
+
+
+
+		/*
 		if (!animation.curAnim.name.startsWith("sing")) {
 			playAnim(idleAnim);
 			return;
@@ -245,6 +262,7 @@ class Character extends AnimatedSprite {
 				return;
 			}
 		}
+		*/
 	}
 
 	override function update(elapsed:Float) {
@@ -253,7 +271,7 @@ class Character extends AnimatedSprite {
 				holdTimer += elapsed;
 			}
 			else
-				holdTimer = 0;
+				holdTimer = FlxMath.lerp(holdTimer, 0, 2 * elapsed);
 
 			if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished && !debugMode) {
 				playAnim(idleAnim, true, false, 10);
