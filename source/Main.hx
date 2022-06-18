@@ -42,7 +42,7 @@ import openfl.events.Event;
 
 class Main extends Sprite {
 	public static inline var ENGINE_NAME:String = "PEngine"; //engine name in case i will change it lmao
-	public static inline var ENGINE_VER = "v0.6";
+	public static inline var ENGINE_VER = "v0.7";
 
 	public static var gameWidth:Int = 1280; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
 	public static var gameHeight:Int = 720; // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
@@ -420,7 +420,7 @@ class EFPS extends FPS {
 		//only in debug because it's ugly
 		#if debug
 		if (!text.contains("RAM Used:")) {
-			text += "\nRAM Used: " + FlxMath.roundDecimal(System.totalMemory / 1000000, 1) + "MB";
+			text += "\n(DEBUG) RAM Used: " + FlxMath.roundDecimal(System.totalMemory / 1000000, 1) + "MB";
 			width = textWidth;
 		}
 		#end
