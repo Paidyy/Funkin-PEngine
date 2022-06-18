@@ -45,7 +45,11 @@ class Paths {
 		path = path.replace("/", FS);
 		path = path.replace("\\", FS);
 		return path;
-	} 
+	}
+
+	public static function exists(path:String) {
+		return OpenFlAssets.exists(path);
+	}
 
 	public static function isCustomPath(arg0:String) {
 		if (OpenFlAssets.exists(arg0)) {
