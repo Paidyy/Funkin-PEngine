@@ -25,6 +25,8 @@ class UIDropDownMenu extends FlxUIDropDownMenu {
 	public var strList:Array<String> = new Array<String>();
 	public var curList:Array<String> = new Array<String>();
 
+	public var selectedIndex:Int;
+
 	override public function new(X:Float = 0, Y:Float = 0, strList:Array<String>, ?FixedCallback:(String, Int)->Void,
 			?showItems:Int = 15, ?Header:FlxUIDropDownHeader, ?DropPanel:FlxUI9SliceSprite, ?ButtonList:Array<FlxUIButton>,
 			?UIControlCallback:Bool->FlxUIDropDownMenu->Void) {
@@ -91,13 +93,14 @@ class UIDropDownMenu extends FlxUIDropDownMenu {
 	
 
 	override private function onClickItem(i:Int):Void {
+		selectedIndex = i + scrollPosition;
 		if (!lock) {
 			var item:FlxUIButton = list[i];
 			selectSomething(item.name, item.label.text);
 			showList(false);
 	
 			if (fixedCallback != null) {
-				fixedCallback(item.label.text, i);
+				fixedCallback(item.label.text, selectedIndex);
 			}
 	
 			if (broadcastToFlxUI) {
