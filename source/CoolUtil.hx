@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxCamera;
 import flixel.system.FlxSound;
 import Song.SwagSong;
 import sys.io.File;
@@ -21,6 +22,15 @@ import openfl.utils.Assets as OpenFlAssets;
 class CoolUtil {
 	public static var defaultDiffArray:Array<String> = ['EASY', 'NORMAL', 'HARD'];
 	public static var difficultyArray:Array<String> = defaultDiffArray;
+
+	public static function resetCameraScroll(?camera:FlxCamera) {
+		if (camera == null)
+			camera = FlxG.camera;
+
+		camera.follow(null);
+		camera.scroll.set(0, 0);
+	}
+
 	#if lime
 	public static function setPitch(sound:FlxSound, pitch:Float = 1.0) {
 		try {
