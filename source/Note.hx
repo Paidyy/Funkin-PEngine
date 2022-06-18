@@ -36,10 +36,10 @@ class Note extends FlxSprite {
 	public var mustPress:Bool = false;
 
 	/** `true` when the note is in `Conductor.safeZoneOffset` */
-	public var canBeHit:Bool = false;
+	public var canBeHit(get, null):Bool = false;
 
 	/** `true` when it missed the strum line */
-	public var tooLate:Bool = false;
+	public var tooLate(get, null):Bool = false;
 
 	/** `true` if the note `strumTime` equals or is higher than current song position. works only for dad note */
 	public var wasGoodHit:Bool = false;
@@ -50,6 +50,7 @@ class Note extends FlxSprite {
 	/** `true` if the note `strumTime` equals or is higher than current song position */
 	public var wasInSongPosition:Bool = false;
 
+	/*
 	public var canActuallyBeHit(default, set):Bool = false;
 
 	function set_canActuallyBeHit(value:Bool):Bool {
@@ -61,6 +62,7 @@ class Note extends FlxSprite {
 		}
 		return canActuallyBeHit;
 	}
+	*/
 
 	//OTHER
 	public static var sizeShit = 0.7;
@@ -248,17 +250,20 @@ class Note extends FlxSprite {
 		}
 
 		// The * 0.5 is so that it's easier to hit them too late, instead of too early
+		/*
 		if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset && strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
 			canBeHit = true;
 		else
 			canBeHit = false;
-		
+
 		if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
 			tooLate = true;
+		*/
 
 		if (strumTime <= Conductor.songPosition)
 			wasInSongPosition = true;
 
+		/*
 		if (!mustPress) {
 			if (PlayState.currentPlaystate.playAs == "bf") {
 				canBeHit = false;
@@ -266,6 +271,7 @@ class Note extends FlxSprite {
 					wasGoodHit = true;
 			}
 		}
+		*/
 
 		if (wasGoodHitButt) {
 			missedSongPosition = true;
@@ -467,4 +473,16 @@ class Note extends FlxSprite {
 	}
 
 	public var notePrefix:String = "blue";
+
+	function get_canBeHit():Bool {
+		return
+		// TOO LATE
+		strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * 1.4) &&
+		// TOO EARLY
+		strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * 1.2);
+	}
+
+	function get_tooLate():Bool {
+		return strumTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit;
+	}
 }
