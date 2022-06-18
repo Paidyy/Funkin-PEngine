@@ -17,6 +17,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v1
       - uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.2.5
@@ -36,4 +37,5 @@ jobs:
           haxelib install udprotean
           haxelib git linc_clipboard https://github.com/josuigoa/linc_clipboard.git
           haxelib install markdown
-          haxelib run lime build Project.xml windows
+          haxelib run lime build windows
+      - shell: cmd
