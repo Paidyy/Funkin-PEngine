@@ -13,16 +13,49 @@ class HealthIcon extends FlxSprite {
 	 */
 	public var sprTracker:FlxSprite;
 
+	/**
+	 * character name or the path if char is set by `setCharFromPath`
+	 * if equals `face` then health icon was not found
+	 */
 	public var curChar:String;
 
+	/**
+	 * character name or the path if char is set by `setCharFromPath`
+	 */
 	public var actualChar:String;
 
-	public function new(char:String = 'bf', isPlayer:Bool = false) {
+	public var isPlayer:Bool = false;
+
+	public function new(char:String = 'bf', isPlayer:Bool = false, skipSetChar:Bool = false) {
 		super();
-		setChar(char, isPlayer);
+		this.isPlayer = isPlayer;
+		if (!skipSetChar || char == null)
+			setChar(char);
 	}
 
-	public function setChar(char:String = 'bf', isPlayer:Bool = false) {
+	public function setCharFromPath(path:String) {
+		actualChar = path;
+		if (FileSystem.exists(path)) {
+			loadGraphic(BitmapData.fromBytes(File.getBytes(path)), true, 150, 150);
+			curChar = path;
+		}
+		else if (Paths.exists(path)) {
+			loadGraphic(path, true, 150, 150);
+			curChar = path;
+		}
+		else {
+			loadGraphic(Paths.image('icons/icon-face'), true, 150, 150);
+			curChar = "face";
+		}
+		antialiasing = true;
+		setAnimationShit();
+		scrollFactor.set();
+	}
+
+	public function setChar(char:String = 'bf', updateIsPlayer:Bool = null) {
+		if (updateIsPlayer != null) {
+			isPlayer = updateIsPlayer;
+		}
 		var type = "normal";
 
 		actualChar = char;
@@ -100,9 +133,13 @@ class HealthIcon extends FlxSprite {
 		}
 		
 		antialiasing = true;
+		setAnimationShit();
+		scrollFactor.set();
+	}
+
+	public function setAnimationShit() {
 		animation.add(curChar, [0, 1], 0, false, isPlayer);
 		animation.play(curChar);
-		scrollFactor.set();
 	}
 
 	override function update(elapsed:Float) {
