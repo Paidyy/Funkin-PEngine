@@ -45,8 +45,8 @@ class Cache {
 		}
 	}
 
-    public static function cacheCharacterConfig(daChar) {
-		if (!Cache.charactersConfigs.exists(daChar)) {
+    public static function cacheCharacterConfig(daChar, forceCache:Bool = false) {
+		if (!Cache.charactersConfigs.exists(daChar) || forceCache) {
             if (FileSystem.exists(Paths.getCharacterPath(daChar) + "config.yml")) {
                 Cache.charactersConfigs.set(daChar, CoolUtil.readYAML(Paths.getCharacterPath(daChar) + "config.yml"));
             }
@@ -71,7 +71,7 @@ class Cache {
 				Cache.charactersAssets.set(daChar, new CharacterCache(File.getBytes(path + ".png"), File.getContent(path + ".xml")));
             }
         }
-		cacheCharacterConfig(daChar);
+		cacheCharacterConfig(daChar, forceCache);
 		if (FileSystem.exists(path + ".txt")) {
 			return FlxAtlasFrames.fromSpriteSheetPacker(BitmapData.fromBytes(Cache.charactersAssets.get(daChar).imageBytes),
 				Cache.charactersAssets.get(daChar).xml);
