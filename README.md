@@ -37,6 +37,25 @@ Also the source code for update unzipper is [here](https://github.com/Paidyy/Fun
 * Version Updater
 * Custom Keybinds
 * Some fixes / improvements to Vanilla
+## NFAQ (not frequently asked questions)
+### Why should i use this over other engines?
+1. The character / stage configs are stored in yaml instead of json so they are more readable
+2. It's easier to add more songs to the game just copy folders from songs/ and data/ into mods/songs and you just have imported a mod from another engine without editing any files
+3. LAN MULTIPLAYERRRRRRRRRRR
+4. Crash Handler
+5. Easy to add skins without changing the character in chart editor
+6. You can change the dimness and blur of game background
+7. Not another psych fork
+8. You can copy and paste shit to text boxes instead of typing them manually
+9. Songs are stored only in songs/ instead of songs/ and data/
+10. There's, stage editor so you don't need to touch the source code or lua
+11. 4K to 9K mania support
+12. In-Game Version Updater, also you can skip updates unlike psych
+13. In-Song Options
+### Game crashess!!!111
+Get the exception and report it on https://github.com/Paidyy/Funkin-PEngine/issues
+### My penis is stuck in xbox how do i escape?!
+...
 ## Credits
 ### PEngine
 - [Paidyy](https://paidyy.newgrounds.com/) - PEngine Programmer
