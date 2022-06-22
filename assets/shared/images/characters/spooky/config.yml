@@ -18,7 +18,8 @@ animations:
  danceLeft:
   name: spooky dance idle
   indices: [0, 2, 6]
-  framerate: 12 
+  framerate: 12
+  isIdle: true
  danceRight:
   name: spooky dance idle
   indices: [8, 10, 12, 14]
