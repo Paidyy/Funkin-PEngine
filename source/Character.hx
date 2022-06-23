@@ -1,5 +1,8 @@
 package;
 
+import haxe.Exception;
+import Main.Notification;
+import flixel.util.FlxTimer;
 import flixel.math.FlxMath;
 import haxe.io.Path;
 import sys.FileSystem;
@@ -22,11 +25,35 @@ class Character extends AnimatedSprite {
 	public var config:AnyObjectMap = new AnyObjectMap();
 	public var configPath:String = "";
 
-	public var idleAnim:String = "idle";
+	public var idleAnim:String = null;
+
+	public var singDuration:Float = 0.4;
+
+	public var singTimer:FlxTimer;
+
+	public var isIdlePlaying(get, never):Bool;
+
+	function get_isIdlePlaying():Bool {
+		if (idleAnim == "danceRight" || idleAnim == "danceLeft") {
+			return animation.name == "danceRight" || animation.name == "danceLeft";
+		}
+		return animation.name == idleAnim;
+	}
 
 	public function addPrefixAlternative(name, prefix, frames, looped) {
 		animationsFromAlt.add(name);
 		animation.addByPrefix(name, prefix, frames, looped);
+	}
+
+	public function startSingTimer() {
+		if (singTimer != null) {
+			singTimer.cancel();
+			singTimer.destroy();
+		}
+		singTimer = new FlxTimer();
+		singTimer.start(singDuration, (timer) -> {
+			playIdle();
+		});
 	}
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, isDebug = false, forceCache:Bool = false) {
@@ -65,6 +92,10 @@ class Character extends AnimatedSprite {
 				frames = Paths.getSparrowAtlas('characters/' + curCharacter + '/' + curCharacter);
 			}
 			Cache.cacheCharacterConfig(curCharacter, forceCache);
+		}
+
+		if (frames == null) {
+			throw new Exception("frames is null");
 		}
 		
 		setConfigPath(Paths.getCharacterPath(curCharacter) + 'config.yml');
@@ -112,8 +143,16 @@ class Character extends AnimatedSprite {
 						setOffset(anim, _x, _y);
 					}
 				}
-				if (idleAnim != null) {
-					playAnim(idleAnim);
+				if (idleAnim == null) {
+					if (animation.exists('idle'))
+						idleAnim = 'idle';
+					else if (animation.exists('danceLeft'))
+						idleAnim = 'danceLeft';
+					else if (animation.exists('danceRight'))
+						idleAnim = 'danceRight';
+				}
+				if (config.exists('singDuration')) {
+					singDuration = config.get('singDuration');
 				}
 				if (Std.string(config.get('flipX')) == "true") {
 					flipX = true;
@@ -122,48 +161,30 @@ class Character extends AnimatedSprite {
 				}
 			}
 			else {
+				new Notification("Character " + curCharacter + " doesnt have a config!").show();
 				trace("character " + curCharacter + " doesnt have a config!");
+				throw new Exception("no config");
 			}
+		}
+		else {
+			new Notification("Character " + curCharacter + " doesnt have a config!").show();
+			trace("character " + curCharacter + " doesnt have a config!");
+			throw new Exception("no config");
+		}
+
+		if (idleAnim == null) {
+			trace("idle animation not found");
+			throw new Exception("idle animation not found");
 		}
 
 		switch (curCharacter) {
-			case 'gf':
-				playAnim('danceRight');
-			case 'gf-christmas':
-				playAnim('danceRight');
-			case 'gf-car':
-				playAnim('danceRight');
 			case 'gf-pixel':
-				playAnim('danceRight');
-
 				setGraphicSize(Std.int(width * PlayState.daPixelZoom));
 				updateHitbox();
 				antialiasing = false;
-			case 'dad':
-				playAnim('idle');
-			case 'spooky':
-				playAnim('danceRight');
-			case 'mom':
-				playAnim('idle');
-			case 'mom-car':
-				playAnim('idle');
-			case 'monster':
-				playAnim('idle');
-			case 'monster-christmas':
-				playAnim('idle');
-			case 'pico':
-				playAnim('idle');
-			case 'bf':
-				playAnim('idle');
-			case 'bf-christmas':
-				playAnim('idle');
-			case 'bf-car':
-				playAnim('idle');
 			case 'bf-pixel':
 				setGraphicSize(Std.int(width * 6));
 				updateHitbox();
-
-				playAnim('idle');
 
 				width -= 100;
 				height -= 100;
@@ -176,15 +197,11 @@ class Character extends AnimatedSprite {
 				updateHitbox();
 				antialiasing = false;
 			case 'senpai':
-				playAnim('idle');
-
 				setGraphicSize(Std.int(width * 6));
 				updateHitbox();
 
 				antialiasing = false;
 			case 'senpai-angry':
-				playAnim('idle');
-
 				setGraphicSize(Std.int(width * 6));
 				updateHitbox();
 
@@ -193,16 +210,10 @@ class Character extends AnimatedSprite {
 				setGraphicSize(Std.int(width * 6));
 				updateHitbox();
 
-				playAnim('idle');
-
 				antialiasing = false;
-			case 'parents-christmas':
-				playAnim('idle');
-			default:
-				playAnim(idleAnim);
 		}
 
-		dance();
+		playIdle();
 
 		if (isPlayer) {
 			flipX = !flipX;
@@ -238,7 +249,7 @@ class Character extends AnimatedSprite {
 			return;
 		}
 		//Normal notes
-		if (animation.finished || animation.name == idleAnim) {
+		if (animation.finished || isIdlePlaying) {
 			playAnim(idleAnim);
 			return;
 		}
@@ -289,8 +300,8 @@ class Character extends AnimatedSprite {
 				if (curCharacter == 'dad')
 					dadVar = 6.1;
 				
-				if (holdTimer >= Conductor.stepCrochet * dadVar * 0.001) {
-					dance();
+				if (holdTimer != 0 && holdTimer >= Conductor.stepCrochet * dadVar * 0.001) {
+					playIdle();
 					holdTimer = 0;
 				}
 			}
@@ -299,7 +310,7 @@ class Character extends AnimatedSprite {
 		switch (curCharacter) {
 			case 'gf':
 				if (animation.curAnim.name == 'hairFall' && animation.curAnim.finished)
-					playAnim('danceRight');
+					playIdle();
 		}
 
 		super.update(elapsed);
@@ -310,6 +321,7 @@ class Character extends AnimatedSprite {
 	/**
 	 * FOR GF DANCING SHIT
 	 */
+	@:deprecated("use playIdle instead of dance dummy")
 	public function dance() {
 		var missAnim = false;
 		if (animation.curAnim.name.endsWith('miss')) {
@@ -397,9 +409,29 @@ class Character extends AnimatedSprite {
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		if (animation.exists(AnimName)) {
 			resetColorTransform();
-			
+
+			if (AnimName.startsWith("sing") && !AnimName.endsWith("miss")) {
+				startSingTimer();
+			}
+
+			if (AnimName == idleAnim) {
+				if (singTimer != null && !singTimer.finished) {
+					return;
+				}
+
+				if (idleAnim == "danceRight" || idleAnim == "danceLeft") {
+					danced = !danced;
+
+					if (danced)
+						super.playAnim('danceRight', Force, Reversed, Frame);
+					else
+						super.playAnim('danceLeft', Force, Reversed, Frame);
+					return;
+				}
+			}
+
 			super.playAnim(AnimName, Force, Reversed, Frame);
-	
+
 			if (curCharacter == 'gf') {
 				if (AnimName == 'singLEFT') {
 					danced = true;
@@ -407,7 +439,7 @@ class Character extends AnimatedSprite {
 				else if (AnimName == 'singRIGHT') {
 					danced = false;
 				}
-	
+
 				if (AnimName == 'singUP' || AnimName == 'singDOWN') {
 					danced = !danced;
 				}
