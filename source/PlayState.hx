@@ -1207,8 +1207,8 @@ class PlayState extends MusicBeatState {
 
 		startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer) {
 			dad.playIdle();
-			gf.dance();
-			bf.playAnim(bf.idleAnim);
+			gf.playIdle();
+			bf.playIdle();
 
 			var curNoteAsset:String = "default";
 
@@ -3800,14 +3800,17 @@ class PlayState extends MusicBeatState {
 				}
 			}
 		}
+		else if (isAnyNoteKeyPressed(JUST_PRESSED)) {
+			badNoteCheck();
+		}
 
 		//IDLE ANIMATION THAT CHANGES LIKE NOTHING I THINK
-		if (bf.holdTimer > Conductor.stepCrochet * 4 * 0.001 && !isAnyNoteKeyPressed()) {
-			if (bf.animation.curAnim.name.startsWith('sing') && !bf.animation.curAnim.name.endsWith('miss')) {
-				bf.playAnim(bf.idleAnim);
-			}
+		if (bf.holdTimer > Conductor.stepCrochet * 4 * 0.001) {
+			bf.playIdle();
 		}
-		dad.playIdle();
+		if (dad.holdTimer > Conductor.stepCrochet * 4 * 0.001) {
+			dad.playIdle();
+		}
 		
 		// MULTIPLAYER SHIT
 		if (playAs == "bf") {
@@ -4149,9 +4152,6 @@ class PlayState extends MusicBeatState {
 	}
 
 	function badNoteCheck(?withNote:Bool = false) {
-		// just double pasting this shit cuz fuk u
-		// REDO THIS SYSTEM!
-
 		//added withNote variable because it fucked up ghostTapping miss animations when the accuracy was worse than sick
 
 		var whichAnimationToPlay = null;
@@ -4384,10 +4384,6 @@ class PlayState extends MusicBeatState {
 		if (FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20) {
 			resyncVocals();
 		}
-
-		if (dad.curCharacter == 'spooky' && curStep % 4 == 2) {
-			// dad.dance();
-		}
 	}
 
 	override function beatHit() {
@@ -4437,13 +4433,10 @@ class PlayState extends MusicBeatState {
 		iconP2.updateHitbox();
 
 		if (curBeat % gfSpeed == 0) {
-			gf.dance();
+			gf.playIdle();
 		}
 
-		if (!bf.animation.curAnim.name.startsWith("sing")) {
-			bf.playAnim('idle');
-		}
-
+		bf.playIdle();
 		dad.playIdle();
 
 		if (curBeat % 8 == 7 && curSong == 'Bopeebo') {

@@ -419,9 +419,9 @@ class StageDebug extends MusicBeatState {
 
     override function beatHit() {
         stage.onBeatHit();
-        midget.playAnim("idle");
-        gf.dance();
-        dad.playAnim("idle");
+		midget.playIdle();
+        gf.playIdle();
+		dad.playIdle();
     }
 
     function getCurrentChar() {
