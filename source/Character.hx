@@ -294,15 +294,18 @@ class Character extends AnimatedSprite {
 		if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished) {
 			playAnim('deathLoop');
 		}
-		if (PlayState.currentPlaystate.playAs == "bf") {
-			if (!curCharacter.startsWith('bf')) {
-				var dadVar:Float = 4;
-				if (curCharacter == 'dad')
-					dadVar = 6.1;
-				
-				if (holdTimer != 0 && holdTimer >= Conductor.stepCrochet * dadVar * 0.001) {
-					playIdle();
-					holdTimer = 0;
+		//null check for multiplayer
+		if (PlayState.currentPlaystate != null) {
+			if (PlayState.currentPlaystate.playAs == "bf") {
+				if (!curCharacter.startsWith('bf')) {
+					var dadVar:Float = 4;
+					if (curCharacter == 'dad')
+						dadVar = 6.1;
+
+					if (holdTimer != 0 && holdTimer >= Conductor.stepCrochet * dadVar * 0.001) {
+						playIdle();
+						holdTimer = 0;
+					}
 				}
 			}
 		}
