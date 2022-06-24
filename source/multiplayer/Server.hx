@@ -33,7 +33,7 @@ class Server extends UDProteanServer {
 				sendStringToCurClient("P1::nick::" + Lobby.player1.nick);
 				sendStringToCurClient("P1::ready::" + Lobby.player1.ready);
 				sendStringToCurClient("SONG::" + Lobby.curSong);
-				sendStringToCurClient("DIFF::" + Lobby.curDifficulty);
+				sendStringToCurClient('DIFF::${Lobby.difficultyDropDown.selectedLabel}');
 			});
 			onClientDisconnected(client -> {
 				trace("Some Client Disconnected");
