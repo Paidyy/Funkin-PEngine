@@ -96,7 +96,7 @@ class Lobby extends MusicBeatState {
             Lobby.isHost = isHost;
 
             curSong = "bopeebo";
-            curDifficulty = 2;
+			curDifficulty = 2;
     
             if (isHost) {
                 player1.nick = nick;
@@ -205,6 +205,14 @@ class Lobby extends MusicBeatState {
         songsDropDown = new UIDropDownMenu(10, 20, CoolUtil.getSongs(), function(song:String, i) {
             curSong = song;
             sendMessage('SONG::$curSong');
+			difficultyDropDown.strList = CoolUtil.setDifficultyList(curSong, true);
+			difficultyDropDown.scrollPosition = 0;
+			difficultyDropDown.showItems = difficultyDropDown.strList.length;
+			difficultyDropDown.curList = [];
+			difficultyDropDown.setList();
+			difficultyDropDown.setData(FlxUIDropDownMenu.makeStrIdLabelArray(difficultyDropDown.curList, true));
+			difficultyDropDown.selectLabel(difficultyDropDown.curList[difficultyDropDown.curList.length - 1]);
+			sendMessage('DIFF::${difficultyDropDown.selectedLabel}');
 		});
 		songsDropDown.selectLabel(curSong);
         if (!isHost)
@@ -212,15 +220,15 @@ class Lobby extends MusicBeatState {
 		var songsText = new FlxText(songsDropDown.x - 5, songsDropDown.y - 15, 0, "Song:");
 
         var diffs:Array<String> = [
-            "Easy",
-            "Normal",
-            "Hard"
+            "easy",
+            "normal",
+            "hard"
         ];
         difficultyDropDown = new UIDropDownMenu(songsDropDown.x + songsDropDown.width + 10, songsDropDown.y, diffs, function(difficulty, index) {
             curDifficulty = CoolUtil.stringToOgType(difficulty);
-            sendMessage('DIFF::$curDifficulty');
+            sendMessage('DIFF::${difficultyDropDown.selectedLabel}');
 		}, 3);
-        difficultyDropDown.selectLabel("Hard");
+        difficultyDropDown.selectLabel("hard");
         if (!isHost)
             difficultyDropDown.lock = true;
 		var difficultyText = new FlxText(difficultyDropDown.x - 5, difficultyDropDown.y - 15, 0, "Difficulty:");
@@ -237,6 +245,17 @@ class Lobby extends MusicBeatState {
     function goToSong(song:String, diff:Int) {
 		Modifiers.activeModifiers = [];
         inGame = true;
+
+		switch (difficultyDropDown.selectedLabel.toLowerCase()) {
+			case "easy":
+				curDifficulty = 0;
+			case "normal":
+				curDifficulty = 1;
+			case "hard":
+				curDifficulty = 2;
+			default:
+				curDifficulty = 1;
+		}
 
 		PlayState.isStoryMode = false;
 		PlayState.storyDifficulty = diff;
@@ -260,16 +279,25 @@ class Lobby extends MusicBeatState {
         PlayState.storyWeek = "week-1";
 		trace('CUR WEEK ' + PlayState.storyWeek);
 
-		if (isHost) {
-			PlayState.currentPlaystate.playAs = "bf";
-            FlxG.switchState(new PlayState(true));
-        } else {
-			PlayState.currentPlaystate.playAs = "dad";
-            FlxG.switchState(new PlayState(true));
-        }
+		FlxG.switchState(new PlayState(true));
     }
 
     private function startCountDown() {
+        if (isHost) {
+			sendMessage("SONG::" + Lobby.curSong);
+			sendMessage('DIFF::${Lobby.difficultyDropDown.selectedLabel}');
+        }
+		switch (difficultyDropDown.selectedLabel.toLowerCase()) {
+			case "easy":
+				Lobby.curDifficulty = 0;
+			case "normal":
+				Lobby.curDifficulty = 1;
+			case "hard":
+				Lobby.curDifficulty = 2;
+			default:
+				Lobby.curDifficulty = 1;
+		}
+
         var funnyNumbers = new FlxText(0, 0, 0, "3", 50);
         funnyNumbers.screenCenter(XY);
         add(funnyNumbers);
