@@ -54,8 +54,9 @@ Also the source code for update unzipper is [here](https://github.com/Paidyy/Fun
 13. In-Song Options
 ### Game crashess!!!111
 Get the exception and report it on https://github.com/Paidyy/Funkin-PEngine/issues
-### My penis is stuck in xbox how do i escape?!
-...
+### Input doesnt remove hitted note
+In Chart Editor press Remove Cloned Notes button in Song section or try re-adding the note
+If these methods doesn't work then report them on https://github.com/Paidyy/Funkin-PEngine/issues
 ## Credits
 ### PEngine
 - [Paidyy](https://paidyy.newgrounds.com/) - PEngine Programmer
