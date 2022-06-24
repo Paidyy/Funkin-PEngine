@@ -1,5 +1,7 @@
 package;
 
+import flixel.system.FlxSoundGroup;
+import flixel.system.FlxSound;
 import AltSharedObject.AltSave;
 import Main.AchievementNotification;
 import yaml.util.ObjectMap.AnyObjectMap;
@@ -10,11 +12,12 @@ import flixel.FlxG;
 
 class Achievement {
 	private static var _achievementSave:AltSave;
+	private static var soundGroup:FlxSoundGroup = new FlxSoundGroup();
     
 	public static function unlock(id:String) {
 		if (!isUnlocked(id)) {
 			new AchievementNotification(id);
-			FlxG.sound.play(Paths.sound('achievementGet'));
+			FlxG.sound.play(Paths.sound('achievementGet'), 1, false, soundGroup);
 			set(id, true);
         }
     }
