@@ -1,5 +1,6 @@
 package;
 
+import Main.Notification;
 import sys.io.File;
 import haxe.io.Path;
 import lime.ui.FileDialog;
@@ -366,6 +367,9 @@ class ChartingState extends MusicBeatState {
 
 		var loadAutosaveBtn:FlxButton = new FlxButton(reloadSong.x, reloadSong.y + 30, 'Load Autosave', loadAutosave);
 
+		var removeClonedNotesBtn:FlxButton = new FlxButton(loadAutosaveBtn.x, loadAutosaveBtn.y + 30, 'Remove Cloned Notes', removeClonedNotes);
+		removeClonedNotesBtn.height = removeClonedNotesBtn.label.height;
+
 		var stepperBPM:FlxUINumericStepper = new FlxUINumericStepper(10, 65, 1, 1, 1, 339, 0);
 		stepperBPM.value = Conductor.bpm;
 		stepperBPM.name = 'song_bpm';
@@ -440,6 +444,7 @@ class ChartingState extends MusicBeatState {
 		tab_group_song.add(reloadSong);
 		tab_group_song.add(reloadSongJson);
 		tab_group_song.add(loadAutosaveBtn);
+		tab_group_song.add(removeClonedNotesBtn);
 		tab_group_song.add(stepperBPM);
 		tab_group_song.add(stepperSpeed);
 		tab_group_song.add(check_swapgui);
@@ -752,6 +757,30 @@ class ChartingState extends MusicBeatState {
 		vocals.time = Conductor.songPosition;
 		vocals.play();
 	}
+
+	function removeClonedNotes() {
+		var removedNotes = 0;
+		//FOR SECTION
+		for (i in _song.notes) {
+			// FOR NOTE
+			for (ogNote in i.sectionNotes) {
+				var skip = true;
+				for (_note in i.sectionNotes) {
+					if (_note[0] == ogNote[0] && _note[1] == ogNote[1] && _note[2] == ogNote[2]) {
+						if (skip) {
+							skip = false;
+							continue;
+						}
+
+						i.sectionNotes.remove(_note);
+						removedNotes++;
+					}
+				}
+			}
+		}
+		new Notification('Removed $removedNotes notes').show();
+	}
+
 	override function update(elapsed:Float) {
 		if (FlxG.sound.music.playing) {
 			if (FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20) {
