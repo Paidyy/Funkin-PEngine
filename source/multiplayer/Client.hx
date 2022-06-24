@@ -1,5 +1,6 @@
 package multiplayer;
 
+import flixel.addons.ui.FlxUIDropDownMenu;
 import multiplayer.Lobby;
 import multiplayer.Lobby.LobbySelectorState;
 import flixel.FlxG;
@@ -78,16 +79,24 @@ class ProteanClient extends UDProteanClient {
 						PlayState.currentPlaystate.strumPlayAnim(splited1, "bf", "static");
 					case "SONG":
 						Lobby.curSong = splited1;
+						Lobby.difficultyDropDown.strList = CoolUtil.setDifficultyList(Lobby.curSong, true);
+						Lobby.difficultyDropDown.scrollPosition = 0;
+						Lobby.difficultyDropDown.showItems = Lobby.difficultyDropDown.strList.length;
+						Lobby.difficultyDropDown.curList = [];
+						Lobby.difficultyDropDown.setList();
+						Lobby.difficultyDropDown.setData(FlxUIDropDownMenu.makeStrIdLabelArray(Lobby.difficultyDropDown.curList, true));
 						Lobby.songsDropDown.selectLabel(Lobby.curSong);
 					case "DIFF":
-						Lobby.curDifficulty = splited1;
-						switch (Lobby.curDifficulty) {
-							case 0:
-								Lobby.difficultyDropDown.selectedLabel = "Easy";
-							case 1:
-								Lobby.difficultyDropDown.selectedLabel = "Normal";
-							case 2:
-								Lobby.difficultyDropDown.selectedLabel = "Hard";
+						Lobby.difficultyDropDown.selectLabel(splited1.toLowerCase());
+						switch (splited1.toLowerCase()) {
+							case "easy":
+								Lobby.curDifficulty = 0;
+							case "normal":
+								Lobby.curDifficulty = 1;
+							case "hard":
+								Lobby.curDifficulty = 2;
+							default:
+								Lobby.curDifficulty = 1;
 						}
 					case "SCO":
 						Lobby.player1.score = splited1;
