@@ -43,6 +43,7 @@ class Options {
 	public static var disableNewComboSystem:Bool = false;
 	public static var chillMode:Bool = false;
 	public static var hitSounds:Bool = false;
+	public static var songDebugMode:Bool = false;
 	
 	private static var _optionsSave:AltSave;
 	private static var _controlsSave:AltSave;

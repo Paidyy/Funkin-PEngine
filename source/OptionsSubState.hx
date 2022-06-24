@@ -136,6 +136,7 @@ class OptionsPrefencesSubState extends OptionSubState {
 			new OptionItem('Background Blur: ' + Options.bgBlur + "XY"),
 			new OptionItem('Discord Rich Presence', true, Options.discordRPC, value -> Options.discordRPC = value),
 			new OptionItem('Disable Crash Handler', true, Options.disableCrashHandler, value -> Options.disableCrashHandler = value),
+			new OptionItem('Song Debug mode (for mod makers)', true, Options.songDebugMode, value -> Options.songDebugMode = value),
 			new OptionItem('Update Checker', true, Options.updateChecker, value -> Options.updateChecker = value),
 			new OptionItem('Freeplay Listen to Vocals', true, Options.freeplayListenVocals, value -> Options.freeplayListenVocals = value),
 			new OptionItem('BF Skin'),
