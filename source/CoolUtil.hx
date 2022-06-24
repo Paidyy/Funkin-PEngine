@@ -51,7 +51,7 @@ class CoolUtil {
 	}
 	#end
 
-	public static function setDifficultyList(song:String):Array<String> {
+	public static function setDifficultyList(song:String, ?toLowerCase:Bool = false):Array<String> {
 		var DIFFS = [];
 		for (file in FileSystem.readDirectory(Paths.getSongPath(song, true))) {
 			if (file.startsWith(song.toLowerCase()) && file.endsWith(".json")) {
@@ -78,11 +78,15 @@ class CoolUtil {
 		for (diff in DIFFS) {
 			diffs.push(diff);
 		}
+		if (toLowerCase) {
+			for (i in 0...diffs.length) {
+				diffs[i] = diffs[i].toLowerCase();
+			}
+		}
 		if (diffs.length <= 0) {
 			diffs = defaultDiffArray;
 		}
-		difficultyArray = diffs;
-		return difficultyArray;
+		return difficultyArray = diffs;
 	}
 
 	/**
