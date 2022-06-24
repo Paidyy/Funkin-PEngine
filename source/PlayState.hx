@@ -187,7 +187,7 @@ class PlayState extends MusicBeatState {
 	var selectedSongPosition:Bool = false;
 	var songPositionCustom:Float;
 
-	public static var currentPlaystate:PlayState;
+	public static var currentPlaystate:PlayState = new PlayState();
 
 	public var currentCameraTween:NumTween;
 	public var currentHUDCameraTween:NumTween;
@@ -287,6 +287,14 @@ class PlayState extends MusicBeatState {
 		if (songPosition != null) {
 			songPositionCustom = songPosition;
 			selectedSongPosition = true;
+		}
+		if (isMultiplayer) {
+			if (Lobby.isHost) {
+				playAs = "bf";
+			}
+			else {
+				playAs = "dad";
+			}
 		}
 	}
 
@@ -528,7 +536,9 @@ class PlayState extends MusicBeatState {
 			stage.applyStageShitToPlayState();
 		} catch (exc) {
 			trace("Failed to load stage:" + tempStageName);
-			new Notification("Failed to load stage:" + tempStageName).show();
+			if (Options.songDebugMode) {
+				new Notification("Failed to load stage:" + tempStageName).show();
+			}
 		}
 
 		if (tempStageName.startsWith("school")) {
@@ -584,7 +594,9 @@ class PlayState extends MusicBeatState {
 			}
 		} catch (exc) {
 			trace("Error when loading GF: " + gfVersion + " | Changing to default");
-			new Notification("Error when loading GF: " + gfVersion + " | Changing to default").show();
+			if (Options.songDebugMode) {
+				new Notification("Error when loading GF: " + gfVersion + " | Changing to default").show();
+			}
 			gfVersion = "gf";
 			gf = new Character(stage.gfX, stage.gfY, gfVersion);
 		}
@@ -602,7 +614,9 @@ class PlayState extends MusicBeatState {
 			}
 		} catch (exc) {
 			trace("Error when loading DAD: " + SONG.player2 + " | Changing to default");
-			new Notification("Error when loading DAD: " + SONG.player2 + " | Changing to default").show();
+			if (Options.songDebugMode) {
+				new Notification("Error when loading DAD: " + SONG.player2 + " | Changing to default").show();
+			}
 			SONG.player2 = "dad";
 			dad = new Character(stage.dadX, stage.dadY, SONG.player2);
 		}
@@ -620,7 +634,9 @@ class PlayState extends MusicBeatState {
 		}
 		catch (error) {
 			trace("Error when loading BF: " + SONG.player1 + " | Changing to default");
-			new Notification("Error when loading BF: " + SONG.player1 + " | Changing to default").show();
+			if (Options.songDebugMode) {
+				new Notification("Error when loading BF: " + SONG.player1 + " | Changing to default").show();
+			}
 			SONG.player1 = "bf";
 			bf = new Boyfriend(stage.bfX, stage.bfY, SONG.player1);
 		}
@@ -693,7 +709,9 @@ class PlayState extends MusicBeatState {
 		}
 		catch (exc) {
 			trace("Failed to load stage (front layer):" + tempStageName);
-			new Notification("Failed to load stage (front layer):" + tempStageName).show();
+			if (Options.songDebugMode) {
+				new Notification("Failed to load stage (front layer):" + tempStageName).show();
+			}
 		}
 
 		bgDimness = new FlxSprite().makeGraphic(FlxG.width + 1000, FlxG.height + 1000, FlxColor.BLACK);
@@ -1316,6 +1334,7 @@ class PlayState extends MusicBeatState {
 					
 					FlxG.sound.play(Paths.sound('introGo'), 0.6);
 				case 4:
+					startedSong = true;
 					timeLeftText.alpha = 1;
 					songTimeBar.alpha = 1;
 			}
@@ -2177,21 +2196,24 @@ class PlayState extends MusicBeatState {
 		}
 
 		if (isMultiplayer) {
+			var player1Icon = Lobby.isHost ? iconP1 : iconP2;
+			var player2Icon = Lobby.isHost ? iconP2 : iconP1;
+
 			if (Lobby.isHost) {
 				if (songScore > Lobby.player2.score) {
-					iconCrown.x = iconP1.x + (iconP1.width / 4);
-					iconCrown.y = iconP1.y - 40;
+					iconCrown.x = player1Icon.x + (player1Icon.width / 4);
+					iconCrown.y = player1Icon.y - 40;
 				} else {
-					iconCrown.x = iconP2.x + (iconP2.width / 4);
-					iconCrown.y = iconP2.y - 40;
+					iconCrown.x = player2Icon.x + (player2Icon.width / 4);
+					iconCrown.y = player2Icon.y - 40;
 				}
 			} else {
 				if (songScore > Lobby.player1.score) {
-					iconCrown.x = iconP1.x + (iconP1.width / 4);
-					iconCrown.y = iconP1.y - 40;
+					iconCrown.x = player1Icon.x + (player1Icon.width / 4);
+					iconCrown.y = player1Icon.y - 40;
 				} else {
-					iconCrown.x = iconP2.x + (iconP2.width / 4);
-					iconCrown.y = iconP2.y - 40;
+					iconCrown.x = player2Icon.x + (player2Icon.width / 4);
+					iconCrown.y = player2Icon.y - 40;
 				}
 			}
 		}
@@ -2865,6 +2887,24 @@ class PlayState extends MusicBeatState {
 		note.kill();
 		notes.remove(note, true);
 		note.destroy();
+		
+		// putted this here because in songs like eggnog theres one section where there are 3 notes in the same position and same note data
+		//
+		// and bcs people are dumb they will blame the input system so here is the anti dumbass check
+		// also i dont target this to the author of https://gamebanana.com/mods/368388?post=10007245
+		if (Options.songDebugMode) {
+			var sameNotesFound = 0;
+			for (daNote in notes) {
+				if (daNote.strumTime == note.strumTime && daNote.noteData == note.noteData && daNote.isSustainNote == false) {
+					sameNotesFound++;
+				}
+			}
+
+			if (sameNotesFound > 1) {
+				trace("found " + sameNotesFound + " the same notes");
+				new Notification('!!! Found $sameNotesFound same notes as the hitted one, run "Remove Cloned Notes" in chart editor !!!').show();
+			}
+		}
 	}
 	public static function addSubtitle(text:String) {
 		if (text != "") {
@@ -2906,6 +2946,9 @@ class PlayState extends MusicBeatState {
 	}
 
 	function endSong():Void {
+		if (!startedSong)
+			return;
+
 		luaCall("onEndSong");
 		luaClose();
 		canPause = false;
@@ -2938,6 +2981,10 @@ class PlayState extends MusicBeatState {
 				transOut = FlxTransitionableState.defaultTransOut;
 				
 				StoryMenuState.setWeekUnlocked(storyWeek, true);
+				switch (storyWeek) {
+					case 'week1', 'week2', 'week3', 'week4', 'week5', 'week6', 'week7':
+						Achievement.unlock(storyWeek);
+				}
 
 				if (SONG.validScore) {
 					Highscore.saveWeekScore(storyWeek, campaignScore, storyDifficulty);
@@ -3136,7 +3183,24 @@ class PlayState extends MusicBeatState {
 		add(splash);
 	}
 
-	private function popUpScore(daNote:Note):Void {
+	//renamed from popUpScore()
+	private function judgeHit(daNote:Note):Void {
+		var debugNoteHit = false;
+
+		if (debugNoteHit) {
+			var alphaHit = new Alphabet(0, 300, "HIT", true, false, 1.5);
+			alphaHit.screenCenter(X);
+			alphaHit.x += 500;
+			alphaHit.velocity.y -= FlxG.random.int(140, 175);
+			alphaHit.velocity.x -= FlxG.random.int(0, 10);
+			add(alphaHit);
+
+			FlxTween.tween(alphaHit, {alpha: 0}, 0.1, {
+				onComplete: function(tween:flixel.tweens.FlxTween) {
+					alphaHit.destroy();
+				}
+			});
+		}
 		if (daNote.isGoodNote) {
 			combo.staticCombo++;
 			var strumtime = daNote.strumTime;
@@ -3166,15 +3230,15 @@ class PlayState extends MusicBeatState {
 			}
 			*/
 	
-			if (noteDiff > Conductor.safeZoneOffset * 0.4) {
+			if (noteDiff > Conductor.safeZoneOffset * 0.7) {
 				daRating = 'shit';
 				score = 50;
 			}
-			else if (noteDiff > Conductor.safeZoneOffset * 0.3) {
+			else if (noteDiff > Conductor.safeZoneOffset * 0.5) {
 				daRating = 'bad';
 				score = 100;
 			}
-			else if (noteDiff > Conductor.safeZoneOffset * 0.15) {
+			else if (noteDiff > Conductor.safeZoneOffset * 0.35) {
 				daRating = 'good';
 				score = 200;
 			}
@@ -3340,6 +3404,12 @@ class PlayState extends MusicBeatState {
 				}
 			}
 		}
+
+		sendMultiplayerMessage("NP::" + daNote.strumTime + "::" + daNote.noteData);
+		if (Options.hitSounds)
+			FlxG.sound.play(Paths.sound("someosuhitsoundidkwhomadeitlol", "preload"), 0.3);
+		daNote.onPlayerHit();
+		removeNote(daNote);
 	}
 
 	/**
@@ -4254,13 +4324,7 @@ class PlayState extends MusicBeatState {
 			vocals.volume = 1;
 
 			if (!note.isSustainNote) {
-				if (Options.hitSounds)
-					FlxG.sound.play(Paths.sound("someosuhitsoundidkwhomadeitlol", "preload"), 0.3);
-				popUpScore(note);
-				sendMultiplayerMessage("NP::" + note.strumTime + "::" + note.noteData);
-				note.onPlayerHit();
-
-				removeNote(note);
+				judgeHit(note);
 			}
 			else {
 				combo.curCombo += 0;
@@ -4691,6 +4755,8 @@ class PlayState extends MusicBeatState {
 	}
 
 	public var disableEvilCamZoom:Bool = false;
+
+	public var startedSong:Bool = false;
 }
 
 /*		⠀⠀⠀⡯⡯⡾⠝⠘⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⠘⡮⣣⠪⠢⡑⡌
