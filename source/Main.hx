@@ -363,13 +363,13 @@ class Notification extends TextField {
 		super();
 
 		selectable = false;
-		defaultTextFormat = new TextFormat(Font.fromFile("assets/fonts/vcr.ttf").fontName, 32, color);
+		defaultTextFormat = new TextFormat(Font.fromFile("assets/fonts/vcr.ttf").fontName, 25, color);
 		this.text = text;
 
 		width = textWidth;
 
 		x = (FlxG.width - width) / 2;
-		y = FlxG.height - 100;
+		y = FlxG.height - 200;
 	}
 	public function show() {
 		if (!notifs.contains(this)) {
@@ -379,7 +379,12 @@ class Notification extends TextField {
 		if (curNotif != null) {
 			return;
 		}
-
+		var bg = new Bitmap(new BitmapData(Std.int(textWidth) + 20, Std.int(textHeight) + 20, true, FlxColor.BLACK));
+		bg.alpha = 0.6;
+		bg.x = x - 10;
+		bg.y = y - 10;
+		
+		Main.instance.addChild(bg);
 		Main.instance.addChild(this);
 		curNotif = this;
 
@@ -396,13 +401,17 @@ class Notification extends TextField {
 		timer.addEventListener(TimerEvent.TIMER_COMPLETE, event -> {
 			tween = Main.notifTweenManager.num(alpha, 0.0, 1, {onComplete: f -> {
 				notifs.remove(this);
+				Main.instance.removeChild(bg);
 				Main.instance.removeChild(this);
 				curNotif = null;
 				if (notifs.length > 0) {
 					notifs[notifs.length - 1].show();
 				}
 				}
-			}, f -> alpha = f);
+			}, f -> {
+				alpha = f;
+				bg.alpha = f > 0.6 ? 0.6 : f;
+			});
 			tween.start();
 		});
 		timer.start();
